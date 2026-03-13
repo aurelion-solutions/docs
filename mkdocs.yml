@@ -1,0 +1,84 @@
+site_name: Aurelion Documentation
+site_description: Aurelion Identity Security Platform
+site_url: https://docs.aurelion.io
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - search.share
+
+nav:
+
+  - Home: index.md
+
+  - Concepts:
+      - Platform Layers: concepts/layers.md
+      - Identity Model: concepts/identity-model.md
+      - Access Model: concepts/access-model.md
+      - Normalization: concepts/normalization.md
+      - Reconciliation: concepts/reconciliation.md
+      - Policy Decision Point: concepts/policy-engine.md
+      - Events and Logs: concepts/events.md
+
+  - Guides:
+      - Connect an application: guides/connect-application.md
+      - Run reconciliation: guides/run-reconciliation.md
+      - Onboard an employee: guides/onboard-employee.md
+      - Evaluate a policy decision: guides/evaluate-policy.md
+      - Engineering Studio:
+          - Overview: user/engineering-studio/overview.md
+          - Configuration: user/engineering-studio/configuration.md
+          - Usage: user/engineering-studio/usage.md
+
+  - Reference:
+      - API Conventions: api/overview.md
+      - Identity:
+          - Person: reference/persons.md
+          - Employee: reference/employees.md
+          - Employee Record: reference/employee-records.md
+          - NHI: reference/nhi.md
+          - Customer: reference/customers.md
+          - Subject: reference/subjects.md
+      - Access:
+          - Account: reference/accounts.md
+          - Resource: reference/resources.md
+          - Action: reference/actions.md
+          - Access Artifact: reference/access-artifacts.md
+          - Access Fact: reference/access-facts.md
+          - Artifact Binding: reference/artifact-bindings.md
+      - Governance:
+          - Initiative: reference/initiatives.md
+          - Ownership Assignment: reference/ownership-assignments.md
+          - Access Usage Fact: reference/access-usage-facts.md
+          - Threat Fact: reference/threat-facts.md
+      - Platform:
+          - Application: reference/applications.md
+          - Connector Instance: reference/connectors.md
+          - Reconciliation: reference/reconciliation.md
+          - Provisioning: reference/provisioning.md
+          - Connector Results: reference/connector-results.md
+          - Secrets: reference/secrets.md
+          - Data Lake: reference/data-lake.md
+          - Logs: reference/logs.md
+
+  - Operations:
+      - Overview: operations/overview.md
+      - Administration: admin/overview.md
+      - Runtimes:
+          - Platform API: operations/platform-api.md
+          - Log Buffer Consumer: operations/mq-log-consumers.md
+          - Log Buffer Cleanup: operations/log-buffer-cleanup.md
+          - MQ EAS Projection Consumer: operations/mq-eas-projection-consumer.md
