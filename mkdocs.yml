@@ -31,6 +31,7 @@ nav:
       - Normalization: concepts/normalization.md
       - Reconciliation: concepts/reconciliation.md
       - Policy Decision Point: concepts/policy-engine.md
+      - Access Analysis: concepts/access-analysis.md
       - Events and Logs: concepts/events.md
 
   - Guides:
@@ -73,6 +74,8 @@ nav:
           - Secrets: reference/secrets.md
           - Data Lake: reference/data-lake.md
           - Logs: reference/logs.md
+      - CLI:
+          - Access Analysis: cli/access-analysis.md
 
   - Operations:
       - Overview: operations/overview.md
