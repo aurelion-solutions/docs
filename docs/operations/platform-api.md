@@ -29,6 +29,10 @@ In production, drop `--reload` and `--log-level debug`. Use a process supervisor
 
 See `aurelion-kernel/.env.example` for the full list.
 
+## Middleware
+
+The runtime installs a correlation-ID middleware in front of the application. For every request it reads `X-Correlation-ID` (or generates a UUID if absent), stores the value in a per-request `ContextVar`, and echoes it back on the response. Domain events and log records emitted while handling the request inherit that ID automatically. See the [API correlation ID contract](../api/overview.md#correlation-id-header) and [Correlation ID concepts](../concepts/events.md#correlation-id).
+
 ## Health
 
 The process is healthy when it accepts HTTP connections on the configured port. There is no dedicated `/health` endpoint — use a TCP check or `GET /docs` (200 = alive).

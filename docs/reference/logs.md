@@ -13,6 +13,7 @@ Note: only the `file` provider supports reading. All other providers (elk, loki,
 | `message` | Human-readable message |
 | `timestamp` | When the event was logged |
 | `component` | Emitting component (e.g. `capabilities.reconciliation`) |
+| `correlation_id` | Request/work-unit identifier; seeded from `X-Correlation-ID` for HTTP-driven logs |
 | `payload` | Structured data |
 
 ## API
