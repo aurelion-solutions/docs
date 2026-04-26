@@ -32,6 +32,7 @@ nav:
       - Reconciliation: concepts/reconciliation.md
       - Policy Decision Point: concepts/policy-engine.md
       - Access Analysis: concepts/access-analysis.md
+      - LLM Platform: concepts/llm-platform.md
       - Events and Logs: concepts/events.md
 
   - Guides:
@@ -39,6 +40,7 @@ nav:
       - Run reconciliation: guides/run-reconciliation.md
       - Onboard an employee: guides/onboard-employee.md
       - Evaluate a policy decision: guides/evaluate-policy.md
+      - Register an LLM model: guides/register-llm-model.md
       - Engineering Studio:
           - Overview: user/engineering-studio/overview.md
           - Configuration: user/engineering-studio/configuration.md
@@ -60,6 +62,7 @@ nav:
           - Access Artifact: reference/access-artifacts.md
           - Access Fact: reference/access-facts.md
           - Artifact Binding: reference/artifact-bindings.md
+          - Capability Grant: reference/capability-grants.md
       - Governance:
           - Initiative: reference/initiatives.md
           - Ownership Assignment: reference/ownership-assignments.md
@@ -74,6 +77,8 @@ nav:
           - Secrets: reference/secrets.md
           - Data Lake: reference/data-lake.md
           - Logs: reference/logs.md
+          - LLM Model: reference/llm-model.md
+          - LLM Execution Profile: reference/llm-execution-profile.md
       - CLI:
           - Access Analysis: cli/access-analysis.md
 
@@ -85,3 +90,4 @@ nav:
           - Log Buffer Consumer: operations/mq-log-consumers.md
           - Log Buffer Cleanup: operations/log-buffer-cleanup.md
           - MQ EAS Projection Consumer: operations/mq-eas-projection-consumer.md
+          - LLM Runtime: operations/llm-runtime.md

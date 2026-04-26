@@ -64,6 +64,19 @@ For validation errors (422), `detail` is an array of field-level errors:
 
 List endpoints do not use cursor or page-based pagination at the API level. Some endpoints accept a `limit` query parameter. If no limit is documented, the endpoint returns all matching records.
 
+## Correlation ID header
+
+Every request and response carries an `X-Correlation-ID` header.
+
+| Direction | Behavior |
+|---|---|
+| Request (caller → kernel) | Optional. If present, the kernel uses the value as-is. If absent, the kernel generates a UUID for the request. |
+| Response (kernel → caller) | Always present. Echoes the request value, or returns the generated UUID. |
+
+The kernel never rejects a request for a missing or malformed header — generation is unconditional. Callers that drive multi-step workflows across services (CLI, Engineering Studio, aurelion-lens) should set the header themselves so events and logs from all services join on the same ID.
+
+The same value appears as `correlation_id` on every `EventEnvelope` and log record emitted while handling the request. See [Correlation ID](../concepts/events.md#correlation-id) in concepts.
+
 ## Authentication
 
 Authentication is not implemented in the current version. The API is intended to run within a trusted network boundary. Do not expose it directly to the public internet.

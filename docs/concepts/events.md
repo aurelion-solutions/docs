@@ -40,6 +40,16 @@ All events on `aurelion.events` travel in a standard envelope:
 
 `event_type` is also the RabbitMQ routing key. Format: three segments, lowercase snake_case.
 
+## Correlation ID
+
+Every event and every log record carries a `correlation_id`. It is the thread that ties together everything that happens because of a single trigger — one HTTP request, one scan run, one consumer message.
+
+The kernel populates `correlation_id` automatically from per-request context. For HTTP traffic, that context is seeded by middleware that reads the `X-Correlation-ID` request header (or generates a UUID if the caller did not send one) and echoes it back in the response. Anything emitted while handling the request — domain events on `aurelion.events`, log records on `aurelion.logs` — inherits that ID without the service layer having to thread it through every call.
+
+External callers (Engineering Studio, the CLI, aurelion-lens) should propagate their own correlation IDs through `X-Correlation-ID` so a single user action stays joinable across services.
+
+Background workers (consumers, schedulers) seed their own correlation context when they start processing a unit of work; the same propagation applies — every event and log emitted within that unit shares the ID.
+
 ## Who emits
 
 Only `service.py` emits events. Never models, never routes.py, never capability orchestrators directly — only when they act as a service layer.
