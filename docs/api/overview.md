@@ -62,7 +62,18 @@ For validation errors (422), `detail` is an array of field-level errors:
 
 ## Pagination
 
-List endpoints do not use cursor or page-based pagination at the API level. Some endpoints accept a `limit` query parameter. If no limit is documented, the endpoint returns all matching records.
+Most list endpoints accept a `limit` query parameter and return a bare JSON array. If no limit is documented, the endpoint returns all matching records.
+
+Endpoints that page over lake-backed data (currently only `GET /api/v0/access-artifacts`) return a cursor page envelope and accept an opaque `cursor` query parameter:
+
+```json
+{
+  "items": [ ... ],
+  "next_cursor": "..."
+}
+```
+
+Pass `next_cursor` back unchanged on the next request. When `next_cursor` is `null`, iteration is complete. Cursors are opaque base64url-encoded JSON — do not parse them, do not persist them across server upgrades.
 
 ## Correlation ID header
 

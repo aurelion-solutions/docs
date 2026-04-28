@@ -36,7 +36,31 @@ This is applied for one Application per run.
 - Common keys with field drift → `refresh_fact_fields`
 - Disappeared keys → `revoke_fact`
 
-**Step 5. Emit result.** One event per run: `reconciliation.run.completed` with counters.
+**Step 5. Emit result.** A run emits a sequence of events on `aurelion.events`: `reconciliation.run.started`, `reconciliation.delta.created`, and either `reconciliation.run.completed` (success) or `reconciliation.run.failed` (failure). See [Events and Logs](events.md#reconciliation-event-ordering) for ordering semantics.
+
+## Run modes
+
+A run takes a `mode` parameter that controls what happens after the diff is materialised:
+
+- `review` (default) — persist delta items, leave the run in `pending_apply`. Apply is a separate step (`POST /reconciliation/runs/{id}/apply`).
+- `dry_run` — persist delta items, mark the run `dry_run_completed`. No apply will follow.
+- `auto_apply` — persist delta items, then immediately delegate to `SyncApplyService` to write approved items to the `normalized.access_facts` Iceberg table. The same request handles both phases under the same advisory lock.
+
+The diff itself is mode-agnostic. Mode only changes the terminal status and whether downstream apply runs as part of the same request.
+
+## Apply
+
+Reconciliation only stages a diff. Writing the resulting facts to the lake — and emitting `inventory.access_fact.*` events — is owned by `SyncApplyService` in `capabilities/sync_apply/`. This split is intentional:
+
+- Reconciliation must not depend on apply-side semantics. The reconciliation slice is forbidden by an architecture invariant from importing `SyncApplyService`, `lake_writer`, or `preflight_recover_already_written` — except in `routes.py`, which is the single allowed bridge for `auto_apply`.
+- Apply owns the mandatory `preflight_recover_already_written` step that runs on every attempt before any new Iceberg write, so a crashed previous run never produces duplicate facts.
+- Apply is the sole emitter of `inventory.access_fact.{created,updated,revoked,reactivated}`; `AccessFactService` mutating methods do not emit these events.
+
+See [Reconciliation reference / Apply runs](../reference/reconciliation.md#apply-runs) for the API surface.
+
+## Concurrency
+
+Only one run per application can be in flight at a time. The kernel takes a Postgres advisory lock keyed by `application_id` for the duration of the run; a concurrent attempt for the same application is rejected with `409 Conflict` rather than serialised. Different applications run in parallel.
 
 ## Handlers
 
