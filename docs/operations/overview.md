@@ -11,3 +11,11 @@ Aurelion ships a small set of long-running background runtimes in addition to th
 | `mq_eas_projection_consumer` | Drives incremental Effective Access Store (EAS) projection from inventory events. See [MQ EAS projection consumer](mq-eas-projection-consumer.md). |
 
 All runtimes use `LogService.emit_safe` for lifecycle and error logs. New runtimes do not use `print` — see the logging discipline note on the per-runtime pages.
+
+## Runbooks
+
+One-shot operational procedures live alongside the runtime pages:
+
+| Runbook | Purpose |
+|---------|---------|
+| [Lake migration](lake-migration-runbook.md) | One-shot PG → Iceberg backfill of `access_artifacts` and `access_facts`, plus the `LAKE_ARTIFACTS_WRITE_BACKEND` flip. |

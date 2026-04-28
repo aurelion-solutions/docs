@@ -76,15 +76,19 @@ nav:
           - Connector Results: reference/connector-results.md
           - Secrets: reference/secrets.md
           - Data Lake: reference/data-lake.md
+          - Lake Migration: reference/lake-migrations.md
           - Logs: reference/logs.md
           - LLM Model: reference/llm-model.md
           - LLM Execution Profile: reference/llm-execution-profile.md
       - CLI:
           - Access Analysis: cli/access-analysis.md
+          - Lake: cli/lake.md
 
   - Operations:
       - Overview: operations/overview.md
       - Administration: admin/overview.md
+      - Runbooks:
+          - Lake Migration: operations/lake-migration-runbook.md
       - Runtimes:
           - Platform API: operations/platform-api.md
           - Log Buffer Consumer: operations/mq-log-consumers.md

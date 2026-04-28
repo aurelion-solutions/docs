@@ -7,9 +7,9 @@ The audit link between a raw AccessArtifact and whatever was produced from it. A
 | Field | Type | Notes |
 |---|---|---|
 | `id` | UUID | Primary key |
-| `artifact_id` | UUID | FK to AccessArtifact |
+| `artifact_id` | UUID | Soft reference to an AccessArtifact row in the lake. No DB-level FK; integrity is enforced by `ArtifactBindingService` at write time. |
 | `target_type` | string | `access_fact`, `resource`, `account`, or `subject` |
-| `target_id` | UUID | FK to the target entity |
+| `target_id` | UUID | Polymorphic reference to the target entity. No DB-level FK by design — resolved through `target_type`. |
 | `created_at` | datetime | When the binding was created |
 
 ## API

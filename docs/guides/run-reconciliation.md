@@ -1,12 +1,46 @@
 # How to run reconciliation
 
-Reconciliation compares the current active access artifacts for an application against the active access facts in Inventory, then creates, updates, or revokes facts to bring the two in sync.
+Reconciliation compares the latest artifact snapshot for an application against the current access facts and persists the per-row delta. Apply (writing to `access_facts`) is a separate concern — pick the run mode that matches your goal.
 
 ## Prerequisites
 
 - An application registered in Aurelion — see [Connect an application](connect-application.md)
-- At least one active `AccessArtifact` for that application (ingested via a connector)
+- At least one ingested artifact batch in the lake for that application
 - A connector instance online and resolvable for the application
+
+## Pick a mode
+
+| Goal | Mode | Terminal status |
+|---|---|---|
+| Stage the diff and review it before applying | `review` (default) | `pending_apply` |
+| See what would change without intent to apply | `dry_run` | `dry_run_completed` |
+| Apply end-to-end in one request | `auto_apply` | `applied` or `partially_applied` |
+
+## Run via API
+
+```bash
+curl -X POST http://localhost:8000/api/v0/reconciliation/runs \
+  -H "Content-Type: application/json" \
+  -d '{
+        "application_id": "550e8400-e29b-41d4-a716-446655440000",
+        "mode": "review"
+      }'
+```
+
+Successful response (truncated):
+
+```json
+{
+  "id": "9f0e...",
+  "status": "pending_apply",
+  "created_count": 5,
+  "updated_count": 2,
+  "revoked_count": 1,
+  "unchanged_count": 34,
+  "observed_snapshot_id": "...",
+  "current_snapshot_id": "..."
+}
+```
 
 ## Run via CLI
 
@@ -14,54 +48,88 @@ Reconciliation compares the current active access artifacts for an application a
 al reconciliation run --application-id <application-uuid>
 ```
 
-Example:
+The CLI defaults to `mode=review`. CLI flags for `dry_run` / fetching delta items land in a later phase.
+
+## Inspect the result
+
+Fetch the run record:
+
 ```bash
-al reconciliation run --application-id 550e8400-e29b-41d4-a716-446655440000
+curl http://localhost:8000/api/v0/reconciliation/runs/<run-id>
 ```
 
-## Run via API
+Page through the delta items:
 
 ```bash
-curl -X POST http://localhost:8000/api/v0/reconciliation/runs \
-  -H "Content-Type: application/json" \
-  -d '{"application_id": "550e8400-e29b-41d4-a716-446655440000"}'
+# First page
+curl "http://localhost:8000/api/v0/reconciliation/runs/<run-id>/delta-items?limit=100"
+
+# Filter by status
+curl "http://localhost:8000/api/v0/reconciliation/runs/<run-id>/delta-items?status=create"
+
+# Next page — pass next_cursor back unchanged
+curl "http://localhost:8000/api/v0/reconciliation/runs/<run-id>/delta-items?cursor=<next_cursor>"
 ```
 
-## Reading the result
+When the response's `next_cursor` is `null`, you have read the full list.
 
-A successful run returns a summary:
+## Common failures
 
-```
-Reconciliation completed for application 550e8400-e29b-41d4-a716-446655440000
-  artifacts_ingested:  42
-  facts_created:       5
-  facts_updated:       2
-  facts_revoked:       1
-  artifacts_unhandled: 0
-```
+**`409 Conflict — Reconciliation already running for this application`** — Another run for the same application is in flight. Wait for it to finish (runs are short and the advisory lock is released on both success and failure paths) and retry. Different applications run in parallel.
 
-| Counter | What it means |
-|---|---|
-| `artifacts_ingested` | How many active artifacts the engine loaded |
-| `facts_created` | New access facts written (subjects gained access) |
-| `facts_updated` | Existing facts updated due to field drift (effect, validity dates) |
-| `facts_revoked` | Facts revoked because the artifact no longer describes that access |
-| `artifacts_unhandled` | Artifacts whose `artifact_type` has no registered handler — they are skipped, not errored |
+**`404 Not Found` on `POST`** — The `application_id` does not exist. Verify the UUID against `GET /api/v0/applications`.
 
-## Diagnosing problems
-
-**`artifacts_ingested: 0`** — No active artifacts exist for this application. Check that your connector has pushed data via `POST /api/v0/connector-results`.
-
-**`artifacts_unhandled > 0`** — One or more artifact types have no registered handler. The engine skips them silently. Check the `artifact_type` values on your artifacts and verify the handler is registered.
-
-**`facts_revoked` is very large** — The run emits a `WARNING`-level event when `facts_revoked > 100`. This usually means a large batch of access was removed at the source. Investigate whether this is expected or if the connector sent incomplete data.
-
-**Per-artifact errors** — Handler exceptions and unknown `action_slug` values are counted internally as `facts_errored`. They do not cause the run to fail and are not printed by the CLI, but they appear as `WARNING` log lines on the server tagged `component=capabilities.reconciliation`.
+**`422 Unprocessable Entity`** — Bad payload: missing `application_id`, unknown `mode`, malformed cursor, `limit` outside `1..1000`, or unknown `status` filter.
 
 ## What happens after a run
 
-The engine emits a `reconciliation.run.completed` event on `aurelion.events`. Downstream projections (the Effective Access Store) pick this up and update their read models. Individual fact-level events (`inventory.access_fact.created`, `.updated`, `.revoked`) are emitted by the Inventory services during the run.
+The engine emits a sequence of events on `aurelion.events`:
+
+- `reconciliation.run.started` — published as the run begins
+- `reconciliation.delta.created` — counts of created/updated/revoked/unchanged items
+- `reconciliation.run.completed` — terminal status (`pending_apply` or `dry_run_completed`)
+- `reconciliation.run.failed` — only on failure, in place of `delta.created` and `run.completed`
+
+All four events share `run_id` and `correlation_id`. See [Events and Logs](../concepts/events.md#reconciliation-event-ordering) for ordering rules.
+
+When `mode=auto_apply` (or after a manual apply call — see below), `SyncApplyService` additionally emits one `inventory.access_fact.{created,updated,revoked,reactivated}` event per applied delta item. Each carries `delta_item_id`, `snapshot_id`, and `reconciliation_run_id`.
+
+For full request/response shapes, see the [Reconciliation reference](../reference/reconciliation.md).
+
+## Apply after a review
+
+If you ran with `mode=review`, the run is left in `pending_apply` with delta items that you can mark `approved`, then trigger apply explicitly:
+
+```bash
+curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "manual_apply"}'
+```
+
+Apply only the items you select:
+
+```bash
+curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "selected_items", "item_ids": ["<delta-item-uuid>", "..."]}'
+```
+
+Dry-run the apply preflight without writing to the lake:
+
+```bash
+curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "dry_run"}'
+```
+
+Common apply failures:
+
+- `404 Not Found` — the `run_id` does not exist.
+- `409 Conflict` — an apply for this run is already running or has already completed. Apply is idempotent at the run level: a successful apply is not re-runnable.
+- `422 Unprocessable Entity` — `selected_items` was passed without `item_ids`, or one of the listed items is not in `approved`.
+
+For the full apply contract, see [Reconciliation reference / Apply runs](../reference/reconciliation.md#apply-runs).
 
 ## Automation
 
-Reconciliation does not run on a schedule automatically — you trigger it. For continuous sync, call the endpoint from your orchestration layer (cron, workflow engine, connector post-push hook) after each data push from the connector.
+Reconciliation does not run on a schedule. Trigger it from your orchestration layer (cron, workflow engine, connector post-push hook) after each artifact ingest — and propagate `X-Correlation-ID` so the run's events stay joinable with whatever upstream action triggered it.
