@@ -127,7 +127,7 @@ Restart the platform API runtime. From this point:
 
 - All new `POST /api/v0/access-artifacts/bulk` writes route to Iceberg.
 - All `GET /api/v0/access-artifacts` reads use DuckDB `iceberg_scan` with cursor pagination — `limit`/`offset` are ignored and `cursor` is required after the first page. See [Access Artifact reference](../reference/access-artifacts.md#get-access-artifacts-response-shape).
-- Existing PG `access_artifacts` rows stay where they are, read-only. They are dropped in Phase 15 Step 16.
+- Existing PG `access_artifacts` rows stay where they are, read-only. The PG tables are dropped in a separate follow-up migration.
 
 `LAKE_ARTIFACTS_WRITE_BACKEND` is a one-way migration gate. Flipping it back to `pg` after writes have landed in Iceberg leaves the lake-resident rows invisible to the API and re-routes new writes to PG — split-brain. If you need to roll back, restore from the pre-flip backup; do not flip the gate twice.
 
@@ -135,7 +135,7 @@ Restart the platform API runtime. From this point:
 
 - **Compaction.** Each migration batch produces one Iceberg snapshot. Multi-million-row runs leave hundreds of small data files behind. Run `al lake status --table raw.access_artifacts` (and `normalized.access_facts`) to inspect snapshot/file counts, then `al lake compact --table <name>` to trigger `rewrite_data_files`. See [`al lake`](../cli/lake.md).
 - **Reconciliation re-run.** Not required. The synthetic `ReconciliationRun` already exists with `status='applied'` and migrated facts carry valid `reconciliation_delta_item_id` values. Reconciliation continues normally on the next ingest cycle.
-- **PG drop.** Step 16 drops the `access_artifacts` and `access_facts` PG tables. Until then the rows stay readable but stale — only the Iceberg side receives new writes.
+- **PG drop.** A separate follow-up migration drops the `access_artifacts` and `access_facts` PG tables. Until then the rows stay readable but stale — only the Iceberg side receives new writes.
 
 ## Failure modes
 

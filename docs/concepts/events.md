@@ -46,23 +46,27 @@ Every event and every log record carries a `correlation_id`. It is the thread th
 
 The kernel populates `correlation_id` automatically from per-request context. For HTTP traffic, that context is seeded by middleware that reads the `X-Correlation-ID` request header (or generates a UUID if the caller did not send one) and echoes it back in the response. Anything emitted while handling the request — domain events on `aurelion.events`, log records on `aurelion.logs` — inherits that ID without the service layer having to thread it through every call.
 
-External callers (Engineering Studio, the CLI, aurelion-lens) should propagate their own correlation IDs through `X-Correlation-ID` so a single user action stays joinable across services.
+External callers (Engineering Studio, the CLI) should propagate their own correlation IDs through `X-Correlation-ID` so a single user action stays joinable across services.
 
 Background workers (consumers, schedulers) seed their own correlation context when they start processing a unit of work; the same propagation applies — every event and log emitted within that unit shares the ID.
 
 ## Who emits
 
-Only `service.py` emits events. Never models, never routes.py, never capability orchestrators directly — only when they act as a service layer.
+Only `service.py` emits events. Never models, never routes.py, never engine orchestrators directly — only when they act as a service layer.
 
 This is not just a convention — it is an invariant. If an event is emitted from two places, that is a bug: either deduplicate or merge the call sites.
 
-The single-emitter rule is enforced per event family. For example, `inventory.access_fact.{created,updated,revoked,reactivated}` is emitted **only** from `capabilities/sync_apply/service.py` — `AccessFactService` mutating methods do not emit. The rationale: `normalized.access_facts` is owned by Iceberg via `lake_writer`, and `SyncApplyService` is the only path that writes to it.
+The single-emitter rule is enforced per event family. For example, `inventory.access_fact.{created,updated,revoked,reactivated}` is emitted **only** from `engines/sync_apply/service.py` — `AccessFactService` mutating methods do not emit. The rationale: `normalized.access_facts` is owned by Iceberg via `lake_writer`, and `SyncApplyService` is the only path that writes to it.
 
 ## Per-row vs per-batch
 
 Most domain events are per-row: one row created or changed, one event. Bulk-ingest paths emit a single per-batch event instead — for example, `inventory.access_artifacts.batch_ingested` is fired exactly once per bulk upsert or bulk tombstone, with `ingested_count`, `tombstoned_count`, `snapshot_id`, and `backend` in the payload. Per-row events are suppressed for the rows in that batch. Projection consumers must therefore handle both shapes when they care about a given entity.
 
-The single-emit-site rule still holds: bulk endpoints under `/access-artifacts` do not emit directly — the ingest capability owns the emission.
+The single-emit-site rule still holds: bulk endpoints under `/access-artifacts` do not emit directly — the ingest engine owns the emission.
+
+The same pattern applies to master-data bulk upserts: `inventory.person.bulk_upserted` is emitted exactly once per bulk call from `PersonService.bulk_upsert_persons`, carrying `count` and `external_ids` in the payload. Per-row `inventory.person.created` events are not emitted for items processed in bulk.
+
+`inventory.employee.bulk_upserted` follows the same shape: emitted exactly once per `POST /api/v0/employees/bulk` from `EmployeeService.bulk_upsert_employees`, with `count` and `person_external_ids` in the payload. Per-row employee events are suppressed for items in the batch. The `employees.person_id` UNIQUE constraint guarantees one employee per person, so the bulk path is an upsert keyed on the resolved person.
 
 ## Reconciliation event ordering
 
@@ -95,7 +99,7 @@ Consumers that care about ordering must sort by `occurred_at` from the envelope.
 | `snapshot_id` | The Iceberg snapshot id of `normalized.access_facts` after the apply batch. Lets a consumer reproduce the exact lake state the event corresponds to. `null` only on crash-recovered items where no new write was needed. |
 | `reconciliation_run_id` | The reconciliation run that staged the delta. Multiple events with the same `reconciliation_run_id` are part of the same logical sync. |
 
-The `actor_kind` is `CAPABILITY` and the `actor_id` is `capabilities.sync_apply`. Recovered-already-written items still emit the event — the user-visible contract is "fact created/updated/revoked", regardless of whether the write happened on this attempt or was carried over from a previous crashed apply.
+The `actor_kind` is `ENGINE` and the `actor_id` is `engines.sync_apply`. Recovered-already-written items still emit the event — the user-visible contract is "fact created/updated/revoked", regardless of whether the write happened on this attempt or was carried over from a previous crashed apply.
 
 ## Effective Access Store (EAS)
 

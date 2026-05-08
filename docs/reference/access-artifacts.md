@@ -32,7 +32,7 @@ The storage backend is selected by the `LAKE_ARTIFACTS_WRITE_BACKEND` migration 
 
 ### `GET /access-artifacts` response shape
 
-> **Breaking change (Phase 15 Step 6).** This endpoint previously returned a bare JSON array of artifacts. It now returns an `AccessArtifactCursorPage`:
+> **Breaking change.** This endpoint previously returned a bare JSON array of artifacts. It now returns an `AccessArtifactCursorPage`:
 >
 > ```json
 > {
@@ -136,7 +136,7 @@ Response (200):
 |---|---|---|
 | `inventory.access_artifacts.batch_ingested` | One per successful bulk upsert or bulk tombstone | `batch_id`, `ingested_count`, `tombstoned_count`, `snapshot_id`, `application_id`, `backend` |
 
-Emitted from `capabilities.ingest.service` (single emit site). Bulk routes never emit directly.
+Emitted from `engines.ingest.service` (single emit site). Bulk routes never emit directly.
 
 ## CLI
 
@@ -147,4 +147,4 @@ Emitted from `capabilities.ingest.service` (single emit site). Bulk routes never
 | `al inventory artifacts list --artifact-type <type>` | Filter by type |
 | `al inventory artifacts get <id>` | Get by ID |
 
-> Bulk upsert / tombstone CLI commands are deferred to Phase 15 Step 17.
+> Bulk upsert / tombstone CLI commands are not yet shipped.

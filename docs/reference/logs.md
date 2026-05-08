@@ -12,7 +12,7 @@ Note: only the `file` provider supports reading. All other providers (elk, loki,
 | `level` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `message` | Human-readable message |
 | `timestamp` | When the event was logged |
-| `component` | Emitting component (e.g. `capabilities.reconciliation`) |
+| `component` | Emitting component (e.g. `engines.reconciliation`) |
 | `correlation_id` | Request/work-unit identifier; seeded from `X-Correlation-ID` for HTTP-driven logs |
 | `payload` | Structured data |
 

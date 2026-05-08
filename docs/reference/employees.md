@@ -18,6 +18,7 @@ Extensible via key-value attributes. Common attribute keys used by the PDP: `emp
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/v0/employees` | Create an employee |
+| `POST` | `/api/v0/employees/bulk` | Bulk upsert employees by `person_external_id` (returns 422 if any external id is unknown) |
 | `GET` | `/api/v0/employees` | List all employees |
 | `GET` | `/api/v0/employees/{id}` | Get by ID |
 | `PATCH` | `/api/v0/employees/{id}` | Update (`is_locked`, `description`) |

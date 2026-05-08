@@ -51,12 +51,9 @@ An AccessFact can be linked to an Account or directly to a Subject, depending on
 
 A binding is an audit thread: it always answers the question "where did this access fact come from?"
 
-## Summary
+## Where to read more
 
-| Entity | What it is | Mutability |
-|---|---|---|
-| AccessArtifact | Raw data from a connector | Append-only |
-| Resource | Normalized access target | Resolve-or-create |
-| AccessFact | Current state of "who can do what" | Revoke / drift-update |
-| Account | Account in a specific system | Updated by reconciliation |
-| ArtifactBinding | Audit link: artifact ↔ result | Immutable |
+For per-entity field schemas, REST endpoints, and CLI commands, see the reference pages:
+[Access Artifact](../reference/access-artifacts.md), [Resource](../reference/resources.md),
+[Access Fact](../reference/access-facts.md), [Account](../reference/accounts.md),
+[Artifact Binding](../reference/artifact-bindings.md).

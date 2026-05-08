@@ -50,7 +50,7 @@ The diff itself is mode-agnostic. Mode only changes the terminal status and whet
 
 ## Apply
 
-Reconciliation only stages a diff. Writing the resulting facts to the lake — and emitting `inventory.access_fact.*` events — is owned by `SyncApplyService` in `capabilities/sync_apply/`. This split is intentional:
+Reconciliation only stages a diff. Writing the resulting facts to the lake — and emitting `inventory.access_fact.*` events — is owned by `SyncApplyService` in `engines/sync_apply/`. This split is intentional:
 
 - Reconciliation must not depend on apply-side semantics. The reconciliation slice is forbidden by an architecture invariant from importing `SyncApplyService`, `lake_writer`, or `preflight_recover_already_written` — except in `routes.py`, which is the single allowed bridge for `auto_apply`.
 - Apply owns the mandatory `preflight_recover_already_written` step that runs on every attempt before any new Iceberg write, so a crashed previous run never produces duplicate facts.
@@ -64,27 +64,13 @@ Only one run per application can be in flight at a time. The kernel takes a Post
 
 ## Handlers
 
-Handlers are pluggable components, one per `artifact_type`. They implement a single method: receive an artifact, return a list of candidates.
+The dispatch step is pluggable: one handler per `artifact_type`. Each
+handler is stateless — it receives a raw artifact and returns a list of
+normalized candidates. New connectors usually mean a new handler, not a
+change to the engine.
 
-Built-in handlers:
-
-| `artifact_type` | What it models |
-|---|---|
-| `role` | Generic role grant — one result per artifact |
-| `sap_role` | SAP role/tcode grant, typically `action_slug=use` |
-| `acl_entry` | NT/POSIX ACE — supports `allow` and `deny` effects |
-| `db_grant` | SQL privileges (`SELECT`→`read`, `INSERT/UPDATE/DELETE`→`write`, `EXECUTE`→`execute`, `ADMIN OPTION`→`admin`); N results per artifact, deduplicated |
-| `privilege` | Generic privilege — identical to `role` today, kept separate for future SoD divergence |
-
-A new artifact type means a new handler file, no changes to the engine.
-
-A handler must:
-- Be stateless
-- Not flush or commit
-- Not emit events
-- Resolve resources via `ResourceService.ensure_resource_by_identity` — return a `resource_id`, not a raw `resource_key`
-
-A handler failure does not stop the whole run — the artifact is counted in `facts_errored` and processing continues.
+For the catalog of built-in handlers and the handler contract, see
+[Reconciliation reference — Handlers](../reference/reconciliation.md#handlers).
 
 ## Transaction ownership
 
@@ -92,6 +78,6 @@ The reconciliation engine does not commit. That is the caller's responsibility: 
 
 ## Where it lives
 
-`src/capabilities/reconciliation/` — the Capabilities layer. The engine adds no migrations and owns no ORM models. It uses Inventory services.
+`src/engines/reconciliation/` — the Engines layer. The engine adds no migrations and owns no ORM models. It uses Inventory services.
 
 To run: `POST /api/v0/reconciliation/runs` or `al reconciliation run`.

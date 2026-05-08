@@ -7,7 +7,7 @@ Aurelion treats large language models as a controlled platform capability, not a
 LLMs in an identity governance system make policy-shaped decisions: mapping connector data, classifying access, summarising findings. Two things follow from that:
 
 - **Determinism comes first.** The platform must be able to answer "which model handled this request, with which parameters, in which version" for every inference call. That requires named, versioned configuration — not ad-hoc inline calls from a feature.
-- **Inference is shared infrastructure.** Multiple products (IGA, IDP) and engines (normalization, access analysis) will eventually call into LLMs. None of them should own the lifecycle of a model file or an HTTP client to a remote provider.
+- **Inference is shared infrastructure.** Several engines (notably `policy_assessment` via its `semantic_assisted` strategy, and `access_analysis`) call into LLMs. None of them should own the lifecycle of a model file or an HTTP client to a remote provider.
 
 The LLM layer encodes both: configuration is data in the database, inference goes through one factory, and every call emits exactly one structured log record on `aurelion.logs`.
 
@@ -56,11 +56,13 @@ Several decisions are deliberate:
 
 ## Where it sits in the architecture
 
-The LLM layer is Layer 0 (Platform). Capability engines and products call into it; it does not call up. It owns its own ORM tables (`llm_models`, `llm_execution_profiles`) and the shared `llm_provider` PostgreSQL enum.
+The LLM layer is part of the Platform layer. Engines call into it; it does not call up. It owns its own ORM tables (`llm_models`, `llm_execution_profiles`) and the shared `llm_provider` PostgreSQL enum.
+
+The boundary with the engine layer is firm: `platform/llm` owns providers, clients, embeddings, and RAG infrastructure. Engines that need semantic reasoning (today: `engines/policy_assessment/strategies/semantic_assisted/`) own *how* that inference is used to make a decision. The platform never knows what the prompt is for; the engine never owns a model file or an HTTP client.
 
 Credentials never live on the model row. When a remote provider needs an API key, the model points at a [Secret](../reference/secrets.md) by `secret_id` and the provider resolves it at load time.
 
-Correlation ID propagation is handled by the kernel-wide middleware — every inference log carries the same `correlation_id` as the originating HTTP request, so a single user action (CSV mapping, finding triage) joins cleanly across services. See [Events and Logs](events.md#correlation-id) for the propagation rules.
+Correlation ID propagation is handled by the kernel-wide middleware — every inference log carries the same `correlation_id` as the originating HTTP request, so a single user action (a scan run, a finding triage flow) joins cleanly across services. See [Events and Logs](events.md#correlation-id) for the propagation rules.
 
 ## Where to read more
 

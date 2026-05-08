@@ -55,7 +55,7 @@ Notes:
 
 ## CLI
 
-CLI bindings land in a later step of Phase 14. This page will be updated when commands ship.
+CLI bindings are not yet shipped. This page will be updated when commands land.
 
 ## Inference API
 

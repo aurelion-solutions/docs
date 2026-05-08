@@ -1,57 +1,54 @@
 # Administration Overview
 
-This section covers platform administration: managing identities, applications, connectors, and access state. Most admin operations go through the REST API or CLI — there is no dedicated admin UI yet.
+This page is a navigation hub for platform administration tasks. There is
+no dedicated admin UI yet — every operation is exposed through the REST
+API and the CLI.
 
-## Identity management
+## Common tasks
 
-**Employees and persons** are created via `POST /api/v0/persons` + `POST /api/v0/employees`, or ingested from source systems via connectors. To lock an employee (block all access without deletion), set `is_locked: true` via `PATCH /api/v0/employees/{id}`. Locked employees receive a `deny` from the PDP regardless of their access facts.
+| Task | Entry point | Reference |
+|---|---|---|
+| Create a person | `POST /api/v0/persons` | [Person](../reference/persons.md) |
+| Create an employee | `POST /api/v0/employees` | [Employee](../reference/employees.md) |
+| Lock an employee | `PATCH /api/v0/employees/{id}` with `is_locked: true` | [Employee](../reference/employees.md) |
+| Create an NHI | `POST /api/v0/nhis` | [NHI](../reference/nhi.md) |
+| Change subject status | `PATCH /api/v0/subjects/{id}` | [Subject](../reference/subjects.md) |
+| Register an application | `al app create` | [Application](../reference/applications.md) |
+| Disable an application | `PATCH /api/v0/applications/{id}` with `is_active: false` | [Application](../reference/applications.md) |
+| Inspect connector status | `al app connectors list` | [Connector Instance](../reference/connectors.md) |
+| Trigger a reconciliation | `al reconciliation run --application-id <uuid>` | [Reconciliation](../reference/reconciliation.md) |
+| Inspect access for a subject | `al inventory access-facts list --subject <uuid>` | [Access Fact](../reference/access-facts.md) |
+| Manage platform secrets | `al secrets create` / `get` / `list` | [Secrets](../reference/secrets.md) |
+| Read operational logs | `al logs read` | [Logs](../reference/logs.md) |
+| Register an LLM model | `POST /api/v0/llm/models` | [LLM Model](../reference/llm-model.md), [Register an LLM model guide](../guides/register-llm-model.md) |
+| Add a policy cartridge | edit `cartridges/lens/<policy_type>/*.yaml` | [Policy Cartridge Operations runbook](../operations/policy-cartridge-operations.md), [Add a policy cartridge guide](../guides/add-policy-cartridge.md) |
 
-**NHIs** are managed via `POST /api/v0/nhis`. Each NHI should have an owner employee assigned (`owner_employee_id`) for accountability.
+## Identity model
 
-**Subjects** are created automatically when the underlying identity is created. Status transitions (active → suspended → terminated) are managed via `PATCH /api/v0/subjects/{id}`.
+Two distinct entity families:
 
-## Application and connector management
+- **Human identities** — `Person` (the durable individual record) plus `Employee` (the employment relationship). See [Identity Model concept](../concepts/identity-model.md).
+- **Non-human identities (NHI)** — service accounts, bots, system principals. Always own an `owner_employee_id` for accountability.
 
-Register a new integration with `al app create --name <name> --code <code>`. The `code` is the stable identifier used by the Policy Decision Point — choose it carefully.
+`Subject` is a unifying handle that both kinds project into; it carries the lifecycle status that the PDP reads.
 
-To disable an application without deleting it, set `is_active: false` via `PATCH /api/v0/applications/{id}`. Inactive applications are excluded from reconciliation and provisioning.
+## Access state
 
-Connector instances register themselves on startup. Monitor their status with `al app connectors list`. If no instance is online for an application's required tags, reconciliation will fail.
+Access facts are written by the reconciliation engine, not by hand.
+Manual mutation of `access_facts` is not supported — to change what an
+account can do, change the upstream artifact and run a reconciliation.
 
-## Access state management
-
-Access state is maintained by the reconciliation engine. To force a full sync for an application:
-
-```bash
-al reconciliation run --application-id <uuid>
-```
-
-To inspect what access currently exists for a subject:
-
-```bash
-al inventory access-facts list --subject <subject-uuid>
-```
-
-## Secrets
-
-Platform secrets (connector credentials, provider tokens) are managed via the secrets subsystem. Add a secret:
-
-```bash
-al secrets create --key connector/github --provider file --namespace default --value ghp_xxx
-```
-
-Secrets are referenced by key in application config and connector payloads. Values are never returned in list responses — only via direct `get`.
+For the full lifecycle of an access fact, see the [Access Model concept](../concepts/access-model.md)
+and the [Reconciliation concept](../concepts/reconciliation.md).
 
 ## Logs and monitoring
 
-Operational logs are buffered in the log buffer and can be read:
-
-```bash
-al logs read --limit 100
-```
-
-For production, configure a SIEM provider (Splunk, ELK, etc.) via the secret providers API and run the `mq_log_siem_consumer` runtime — it forwards the `aurelion.logs` exchange to your SIEM.
+For production, run the `mq_log_siem_consumer` runtime to forward the
+`aurelion.logs` exchange to a SIEM (Splunk, ELK, etc.). For ad-hoc
+inspection, use the log-buffer API or `al logs read`.
 
 ## Runtimes
 
-All background runtimes must be running for full platform functionality. See [Operations](../operations/overview.md) for the full list and startup instructions.
+All background runtimes must be running for full platform functionality.
+See [Operations overview](../operations/overview.md) for the full list and
+startup instructions.

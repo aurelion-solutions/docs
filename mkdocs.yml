@@ -31,6 +31,7 @@ nav:
       - Normalization: concepts/normalization.md
       - Reconciliation: concepts/reconciliation.md
       - Policy Decision Point: concepts/policy-engine.md
+      - Policy Cartridges: concepts/policy-cartridges.md
       - Access Analysis: concepts/access-analysis.md
       - LLM Platform: concepts/llm-platform.md
       - Events and Logs: concepts/events.md
@@ -41,10 +42,9 @@ nav:
       - Onboard an employee: guides/onboard-employee.md
       - Evaluate a policy decision: guides/evaluate-policy.md
       - Register an LLM model: guides/register-llm-model.md
+      - Add a policy cartridge: guides/add-policy-cartridge.md
       - Engineering Studio:
           - Overview: user/engineering-studio/overview.md
-          - Configuration: user/engineering-studio/configuration.md
-          - Usage: user/engineering-studio/usage.md
 
   - Reference:
       - API Conventions: api/overview.md
@@ -68,6 +68,15 @@ nav:
           - Ownership Assignment: reference/ownership-assignments.md
           - Access Usage Fact: reference/access-usage-facts.md
           - Threat Fact: reference/threat-facts.md
+      - Detection:
+          - Policy Catalog: reference/policy-catalog.md
+          - Policy Cartridges: reference/policy-cartridges.md
+          - Capability Preview: reference/capability-preview.md
+          - Analytics: reference/analytics.md
+          - Deterministic Report: reference/deterministic-report.md
+      - Engineering Studio:
+          - Configuration: reference/engineering-studio-configuration.md
+          - Commands and Views: reference/engineering-studio.md
       - Platform:
           - Application: reference/applications.md
           - Connector Instance: reference/connectors.md
@@ -89,6 +98,8 @@ nav:
       - Administration: admin/overview.md
       - Runbooks:
           - Lake Migration: operations/lake-migration-runbook.md
+          - Policy Cartridge Operations: operations/policy-cartridge-operations.md
+          - Engineering Studio Troubleshooting: guides/engineering-studio-troubleshooting.md
       - Runtimes:
           - Platform API: operations/platform-api.md
           - Log Buffer Consumer: operations/mq-log-consumers.md

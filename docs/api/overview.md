@@ -84,7 +84,7 @@ Every request and response carries an `X-Correlation-ID` header.
 | Request (caller → kernel) | Optional. If present, the kernel uses the value as-is. If absent, the kernel generates a UUID for the request. |
 | Response (kernel → caller) | Always present. Echoes the request value, or returns the generated UUID. |
 
-The kernel never rejects a request for a missing or malformed header — generation is unconditional. Callers that drive multi-step workflows across services (CLI, Engineering Studio, aurelion-lens) should set the header themselves so events and logs from all services join on the same ID.
+The kernel never rejects a request for a missing or malformed header — generation is unconditional. Callers that drive multi-step workflows across services (CLI, Engineering Studio) should set the header themselves so events and logs from all services join on the same ID.
 
 The same value appears as `correlation_id` on every `EventEnvelope` and log record emitted while handling the request. See [Correlation ID](../concepts/events.md#correlation-id) in concepts.
 

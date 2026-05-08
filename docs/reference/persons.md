@@ -7,8 +7,8 @@ The reusable human profile root. Every Employee is backed by a Person. A Person 
 | Field | Type | Notes |
 |---|---|---|
 | `id` | UUID | Primary key |
-| `external_id` | string | Identifier from the source system |
-| `description` | string | Display label |
+| `external_id` | string | Identifier from the source system — **unique**, idempotency key for bulk upsert |
+| `description` | string | Display label (stores `full_name` from bulk requests) |
 
 Extensible via key-value attributes.
 
@@ -17,6 +17,7 @@ Extensible via key-value attributes.
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/v0/persons` | Create a person |
+| `POST` | `/api/v0/persons/bulk` | Bulk upsert up to 500 persons by `external_id` (idempotent) |
 | `GET` | `/api/v0/persons` | List all persons |
 | `GET` | `/api/v0/persons/{id}` | Get by ID |
 | `GET` | `/api/v0/persons/{id}/attributes` | List attributes |

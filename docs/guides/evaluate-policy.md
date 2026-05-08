@@ -129,6 +129,6 @@ Expected: `decision: deny`, signal `credential.exposed`, `risk_level: critical`.
 
 **Empty `signals` and unexpected decision** — check that your attribute names match what the policy rules reference. Attribute key names are case-sensitive.
 
-**`decision: allow` when you expect deny** — the relevant rule may not exist yet, or `target.application` may not match any rule's `application` filter. Check `resources/policies/` for the application's rule file.
+**`decision: allow` when you expect deny** — the relevant rule may not exist yet, or `target.application` may not match any rule's `application` filter. For atomic PDP decisions (`POST /api/v0/policy/evaluate`), check `resources/policies/` for the application's rule file. For policy-cartridge-backed checks (orphan / terminated / unused, raised by Access Analysis scans), the rules live in `cartridges/lens/<policy_type>/*.yaml` — see [Policy Cartridges](../concepts/policy-cartridges.md).
 
 **`422 Validation error`** — the Facts JSON is malformed or missing required fields. The error body will describe which field failed.

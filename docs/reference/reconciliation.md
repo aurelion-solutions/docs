@@ -23,6 +23,33 @@ A Postgres advisory lock is held for the duration of a run, keyed by `applicatio
 
 Different applications run in parallel — the lock is per-application.
 
+## Handlers
+
+One handler per `artifact_type`. Each handler turns an artifact payload
+into a list of normalized candidates.
+
+| `artifact_type` | What it models |
+|---|---|
+| `role` | Generic role grant — one result per artifact |
+| `sap_role` | SAP role/tcode grant, typically `action_slug=use` |
+| `acl_entry` | NT/POSIX ACE — supports `allow` and `deny` effects |
+| `db_grant` | SQL privileges (`SELECT`→`read`, `INSERT/UPDATE/DELETE`→`write`, `EXECUTE`→`execute`, `ADMIN OPTION`→`admin`); N results per artifact, deduplicated |
+| `privilege` | Generic privilege — identical to `role` today, kept separate for future SoD divergence |
+
+Handler contract:
+
+- Stateless.
+- Does not flush or commit.
+- Does not emit events.
+- Resolves resources via `ResourceService.ensure_resource_by_identity` — returns a `resource_id`, not a raw `resource_key`.
+
+A handler failure does not stop the whole run — the artifact is counted
+in `facts_errored` and processing continues. An unknown `artifact_type`
+means the artifact is skipped, not errored.
+
+Adding a new artifact type is a new handler file; the engine does not
+change.
+
 ## Run record key fields
 
 | Field | Type | Notes |

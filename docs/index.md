@@ -1,129 +1,40 @@
-# Aurelion — Overview
+# Aurelion Documentation
 
-Aurelion is a foundational identity and access platform designed to support the construction of enterprise-grade, deeply customized security and governance solutions.
+Aurelion is an identity governance and access platform with a kernel
+(Python/FastAPI), a VS Code extension (Engineering Studio), and a CLI.
+This documentation covers all three.
 
-It is not a single product.  
-It is an **identity fabric** — a system that provides the underlying data, control, and execution layers upon which multiple products can be built.
+## Where to start
 
----
+| If you want to… | Start here |
+|---|---|
+| Understand the architecture | [Platform Layers](concepts/layers.md) |
+| Understand the identity model | [Identity Model](concepts/identity-model.md) |
+| Understand how access is normalized | [Access Model](concepts/access-model.md) |
+| Connect a new application | [Connect an application](guides/connect-application.md) |
+| Run a reconciliation | [Run reconciliation](guides/run-reconciliation.md) |
+| Onboard an employee | [Onboard an employee](guides/onboard-employee.md) |
+| Evaluate a policy decision | [Evaluate a policy decision](guides/evaluate-policy.md) |
+| Add a policy cartridge | [Add a policy cartridge](guides/add-policy-cartridge.md) |
+| Register an LLM model | [Register an LLM model](guides/register-llm-model.md) |
+| Look up a REST entity | the [Reference](reference/persons.md) section |
+| Run a deployment | [Operations overview](operations/overview.md) |
 
-## Architectural Positioning
+## Documentation layout
 
-Aurelion is structured into three logical layers.
+The site follows the [Diátaxis](https://diataxis.fr/) structure:
 
-### 1. Platform Layer — Core Infrastructure
+- **[Concepts](concepts/layers.md)** — explanations of the architecture, the identity model, the access pipeline, the policy engine, the policy cartridge system, the LLM platform, and the events bus. Read these to build a mental model.
+- **[Guides](guides/connect-application.md)** — step-by-step procedures for common tasks. Read these when you have a specific goal.
+- **[Reference](reference/persons.md)** — exhaustive entity, API, and CLI documentation. Read these to look up a field, an endpoint, or a flag.
+- **[Operations](operations/overview.md)** — runbooks and runtime documentation for deploying, monitoring, and recovering Aurelion in production.
 
-The platform provides:
+## Scope of this documentation
 
-- Event-driven architecture (MQ-based)
-- Deterministic processing pipelines
-- Audit-grade event streams
-- Extensible integration model (connectors)
+This site documents three components:
 
-This layer ensures resilience under load, horizontal scalability, and full traceability of every operation. All state transitions are observable and reconstructable.
+- **aurelion-kernel** — the Python/FastAPI backend (REST API, database, event bus, projection runtimes).
+- **aurelion-engineering-studio** — the VS Code extension that browses platform state from the IDE.
+- **aurelion-cli** — the `al` Typer client used in scripts and runbooks.
 
-### 2. Inventory Layer — Identity Data Plane
-
-The source of truth for identity and access:
-
-- Subjects (humans, service accounts, NHI)
-- Accounts
-- AccessFacts (universal access model)
-- Effective access (EAS)
-- Ownership and lineage
-
-Key properties: normalized access model across systems, time-aware state (what existed at any point in time), deterministic projections, complete explainability ("who has what and why").
-
-This layer abstracts away connector-specific complexity and creates a stable foundation for analytics and control.
-
-### 3. Product Layer — Composable
-
-On top of Platform + Inventory, Aurelion enables building:
-
-- **IGA** — Identity Governance & Administration
-- **IDP** — Identity Provider
-- **ITDR** — Identity Threat Detection & Response
-- **NHI security**
-- **CIAM**
-- Custom enterprise solutions
-
-Products can be used out-of-the-box, extended, or fully replaced with custom implementations. This makes Aurelion suitable both as a ready-to-use platform and as a framework for building proprietary identity solutions.
-
----
-
-## Core Principles
-
-### Determinism First
-
-All critical logic — access resolution, SoD, analytics — is deterministic, reproducible, and auditable.
-
-AI is used only for interpretation and presentation, never for core decisions.
-
-### Event-Driven by Design
-
-All operations emit structured events. State changes are traceable via event streams. Components are loosely coupled via MQ.
-
-This enables scalability, fault isolation, and external integrations (SIEM, SOAR, PDP).
-
-### Explainability and Auditability
-
-Every insight produced by the system can be traced back to raw access data, transformation steps, and applied rules. No black-box decisions.
-
-This is critical for regulatory compliance (SOX, ISO 27001, DORA), internal security reviews, and incident investigation.
-
-### Extensibility
-
-Aurelion is designed to be extended at every level: connectors, mappings (raw → capability), policies, analytics, product layer.
-
-Organizations can adapt the platform to their data model, governance model, and security posture.
-
----
-
-## AI Role in Aurelion
-
-AI is integrated as a controlled layer: summarization, report generation, explanation of risks, roadmap suggestions.
-
-It operates strictly on prepared, structured context and does not access the database directly, mutate system state, or replace deterministic logic.
-
----
-
-## Reliability and Scalability
-
-Aurelion is designed for enterprise environments:
-
-- MQ-backed processing ensures durable pipelines
-- Components are stateless where possible
-- Failure in one subsystem does not cascade
-- Reprocessing and replay are supported via event streams
-
----
-
-## Security and Licensing
-
-Aurelion is distributed under a source-available license (BUSL-1.1):
-
-- Allows inspection and internal use
-- Protects the integrity of the platform
-- Prevents uncontrolled redistribution in competing products
-
-This ensures transparency for customers and sustainability for the platform.
-
----
-
-## Positioning
-
-Aurelion is not "just another IGA tool."
-
-It is a platform for building identity systems — unified across human and non-human identities, capable of modeling real-world complexity, designed for organizations that require control, flexibility, and depth.
-
-### First Product: Aurelion Lens
-
-The first product built on Aurelion is **Lens**: analytics, risk visibility, explainable reports. It demonstrates the power of the underlying layers while providing immediate business value.
-
----
-
-## Summary
-
-Aurelion provides a robust platform layer, a normalized identity data plane, and a foundation for building advanced identity products.
-
-It enables organizations to move from fragmented tools to a cohesive, extensible identity fabric.
+Adjacent products (IGA, IDP, ITDR, etc.) are documented separately.
