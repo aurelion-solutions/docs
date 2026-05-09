@@ -176,7 +176,10 @@ condition:
 ```
 
 `float(context[fact]) > float(value)`. Missing or non-numeric fact returns
-`False` (does not raise).
+`False` (does not raise). `None` short-circuits to `False` before the cast.
+Numeric strings such as `"123"` are coerced via `float()` and compare numerically
+(`"123"` > `100` → `True`). Non-numeric strings (e.g. `"abc"`) return `False`.
+This behaviour is covered by the test `test_greater_than_string_ish_numbers_and_none` (Phase 17 Step 15).
 
 ## Fact-path resolution
 

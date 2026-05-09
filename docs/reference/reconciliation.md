@@ -23,6 +23,16 @@ A Postgres advisory lock is held for the duration of a run, keyed by `applicatio
 
 Different applications run in parallel — the lock is per-application.
 
+## Tunable settings
+
+| Key | Default | Range | Effect |
+|---|---|---|---|
+| `reconciliation_fetch_batch_size` | `5000` | `1..50000` | DuckDB `fetchmany` batch size used by the pipeline when streaming `raw.access_artifacts` and `normalized.access_facts` rows |
+
+Settings live in the `runtime_settings` table and are reloaded per-run
+via `LakeSettings`; changes apply to the next run for any application
+without a kernel restart. Update through `PUT /api/v0/runtime-settings/{key}`.
+
 ## Handlers
 
 One handler per `artifact_type`. Each handler turns an artifact payload
@@ -45,7 +55,11 @@ Handler contract:
 
 A handler failure does not stop the whole run — the artifact is counted
 in `facts_errored` and processing continues. An unknown `artifact_type`
-means the artifact is skipped, not errored.
+means the artifact is skipped, not errored. Both skip paths (handler
+exception and unknown action slug) emit an operational WARNING log via
+`engines.reconciliation` to the `aurelion.logs` bus, carrying the
+artifact id (or candidate index) and the reason. Skip warnings use
+`LogService.emit_safe` — a logging failure cannot abort the run.
 
 Adding a new artifact type is a new handler file; the engine does not
 change.

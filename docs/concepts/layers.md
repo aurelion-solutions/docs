@@ -50,7 +50,6 @@ Current engines:
 - **`access_analysis`** — batch / retrospective analysis of existing access state (capability projection, SoD scans, findings).
 - **`access_orchestration`** — live orchestration of intents to change or validate access: employee requests, JML events, manager and admin actions, remediation, SoD mitigation, API/import-driven operations. Delegates to `policy_assessment`, `effective_access`, `provisioning`, and (later) workflow.
 - **`provisioning`** — applies access changes to external systems (egress).
-- **`lake_migration`** — one-shot lake schema migrations.
 
 ## Where to put new code
 

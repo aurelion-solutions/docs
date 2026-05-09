@@ -1,1 +1,5 @@
 site/
+
+# Cloudflare Wrangler
+.wrangler
+.dev.vars

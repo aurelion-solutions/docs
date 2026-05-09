@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- `docs/reference/lake-migrations.md` deleted — `engines/lake_migration` slice retired in kernel Phase 17 Step 13.
+- `docs/operations/lake-migration-runbook.md` deleted — operational runbook for the retired migration tool.
+- `docs/cli/lake.md` rewritten to drop `migrate-from-pg` section; `status` and `compact` sections retained.
+- `docs/concepts/layers.md` no longer lists `lake_migration` as an active engine.
+
 ## [0.4.0] - 2026-04-28
 
 ### Added

@@ -18,5 +18,4 @@ One-shot operational procedures live alongside the runtime pages:
 
 | Runbook | Purpose |
 |---------|---------|
-| [Lake migration](lake-migration-runbook.md) | One-shot PG → Iceberg backfill of `access_artifacts` and `access_facts`, plus the `LAKE_ARTIFACTS_WRITE_BACKEND` flip. |
 | [Policy Cartridge Operations](policy-cartridge-operations.md) | Pre-flight, deploy, verify, and rollback procedure for shipping file-based policy cartridges. |
