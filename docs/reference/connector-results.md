@@ -58,6 +58,27 @@ Two result types:
 | 404 | Application not found |
 | 422 | Invalid UUID, wrong `result_type`, missing `payload` or `location` |
 
+## Events
+
+| Event | When | Payload |
+|---|---|---|
+| `connector.result.received` | Successful ingest of an `inline` or `lake_ref` result | `result_id`, `application_id`, `task_id`, `now` |
+
+`artifacts_bulk` results do not emit this event — they emit their own batch event (see `inventory.access_artifacts.batch_ingested` in `reference/access-artifacts.md`).
+
+### Payload fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result_id` | UUID string | Identifier of the staged `staging_connector_results` row |
+| `application_id` | UUID string | Application the result belongs to |
+| `task_id` | UUID string | Originating connector task |
+| `now` | ISO-8601 datetime (UTC) | Server-side ingest timestamp. Consumed by the `application_sync` pipeline as the projection cut-off (`effective_access.project_application` `now` arg). Always present since Phase 18 Step 21. |
+
+Consumer contract: any downstream subscriber that expects to drive a pipeline run via `args_from_payload` (see [Pipeline YAML](pipeline-yaml.md)) can rely on `now` being present. The field is stamped at emit time, not at task completion — it is the moment the staging row was written, not the moment the connector finished work.
+
+See [Events and Logs](../concepts/events.md) for envelope and bus semantics.
+
 ## No CLI equivalent
 
 Connector results are posted by connector processes, not interactively.

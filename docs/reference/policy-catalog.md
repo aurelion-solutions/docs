@@ -66,8 +66,9 @@ The catalog is a list, not a control plane. It does **not** expose:
 - matched scan results
 - editing or toggle APIs
 
-Editing SoD rules continues to go through the existing
-[SoD Rules](sod-rules.md) endpoints. File cartridges are not editable via
+Editing SoD rules continues to go through the `POST /api/v0/sod-rules/apply`
+endpoint (see [CLI — Access Analysis](../cli/access-analysis.md) for the
+config-as-code workflow). File cartridges are not editable via
 the API by design.
 
 ## API

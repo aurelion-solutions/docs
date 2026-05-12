@@ -9,6 +9,8 @@ the CLI, and their editor.
 
 - Browses **applications** registered in the kernel and the **connector instances** whose tags match each application.
 - Browses **inventory** (currently: customers) through a lazy-loaded tree.
+- Browses **pipeline runs** by status and drills into per-run and per-step detail panels.
+- Validates **pipeline YAML** offline against a bundled JSON Schema — autocomplete and structural checks work without a kernel connection.
 - Streams **application logs** from `/api/v0/log-buffer` directly into an editor tab.
 - Exposes a status bar widget summarizing how many connector instances are online.
 

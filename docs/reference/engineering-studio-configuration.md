@@ -18,7 +18,7 @@ For diagnosing failed loads, see [Engineering Studio troubleshooting](../guides/
 
 ## Behaviour on change
 
-- `apiBaseUrl` — change recreates the HTTP client, triggers an immediate refresh of the Applications tree, and resets the log-stream cursor.
+- `apiBaseUrl` — change recreates the HTTP client, triggers an immediate refresh of the Applications tree, resets the log-stream cursor, and refetches the live pipeline YAML schema from `/.well-known/pipeline-schema.json` (falls back to the bundled snapshot on failure — see [Pipeline YAML editing](engineering-studio.md#pipeline-yaml-editing)).
 - `logStreamPollMs` — change restarts the log streamer's tick on the new cadence.
 - `refreshIntervalMs` — change takes effect on the next tick; `0` halts the auto-refresh timer entirely.
 

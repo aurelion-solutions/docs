@@ -24,6 +24,9 @@ nav:
 
   - Home: index.md
 
+  - Tutorials:
+      - Write your first pipeline: tutorials/write-your-first-pipeline.md
+
   - Concepts:
       - Platform Layers: concepts/layers.md
       - Identity Model: concepts/identity-model.md
@@ -34,6 +37,10 @@ nav:
       - Policy Cartridges: concepts/policy-cartridges.md
       - Access Analysis: concepts/access-analysis.md
       - LLM Platform: concepts/llm-platform.md
+      - Pipeline Orchestrator: concepts/pipeline-orchestrator.md
+      - Idempotency and Reclaim: concepts/idempotency-and-reclaim.md
+      - Heartbeat Architecture: concepts/heartbeat-architecture.md
+      - Event Flow: concepts/event-flow.md
       - Events and Logs: concepts/events.md
 
   - Guides:
@@ -43,6 +50,11 @@ nav:
       - Evaluate a policy decision: guides/evaluate-policy.md
       - Register an LLM model: guides/register-llm-model.md
       - Add a policy cartridge: guides/add-policy-cartridge.md
+      - Cancel a pipeline run: guides/cancel-pipeline-run.md
+      - Retry a failed pipeline run: guides/retry-failed-run.md
+      - Add an engine action: guides/add-engine-action.md
+      - Wait for an external event: guides/wait-for-external-event.md
+      - Troubleshoot stuck pipeline runs: guides/troubleshoot-stuck-runs.md
       - Engineering Studio:
           - Overview: user/engineering-studio/overview.md
 
@@ -83,14 +95,21 @@ nav:
           - Reconciliation: reference/reconciliation.md
           - Provisioning: reference/provisioning.md
           - Connector Results: reference/connector-results.md
+          - Pipeline Orchestrator:
+              - YAML grammar: reference/pipeline-yaml.md
+              - Runs API: reference/pipeline-runs-api.md
+              - Action registry: reference/engine-action-registry.md
+              - Events: reference/pipeline-events.md
           - Secrets: reference/secrets.md
           - Data Lake: reference/data-lake.md
           - Logs: reference/logs.md
           - LLM Model: reference/llm-model.md
           - LLM Execution Profile: reference/llm-execution-profile.md
+          - Runtime settings: reference/runtime-settings.md
       - CLI:
           - Access Analysis: cli/access-analysis.md
           - Lake: cli/lake.md
+          - Pipelines: cli/pipelines.md
 
   - Operations:
       - Overview: operations/overview.md

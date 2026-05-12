@@ -101,6 +101,20 @@ Consumers that care about ordering must sort by `occurred_at` from the envelope.
 
 The `actor_kind` is `ENGINE` and the `actor_id` is `engines.sync_apply`. Recovered-already-written items still emit the event — the user-visible contract is "fact created/updated/revoked", regardless of whether the write happened on this attempt or was carried over from a previous crashed apply.
 
+## Pipeline orchestrator events
+
+Pipeline state transitions emit events on `aurelion.events` under the `pipeline.run.*` and `pipeline.step.*` families. All are emitted from `platform/orchestrator/service.py` — the sole writer to orchestrator tables.
+
+Key routing keys introduced in Phase 18:
+
+| Routing key | When emitted | Notable payload fields |
+|---|---|---|
+| `pipeline.run.started` | Run claimed by a worker | `pipeline_name`, `worker_id` |
+| `pipeline.run.heartbeat_lost` | Stale run released by reclaim sweep | `previous_worker_id`, `stale_for_seconds` |
+| `pipeline.step.aborted` | Active step marked `aborted` during reclaim or drain | `step_run_id`, `step_name`, `attempt`, `reason` |
+
+`pipeline.run.heartbeat_lost` fires when a worker's DB heartbeat goes silent for more than 10 seconds and another worker's reclaim sweep picks up the run. `pipeline.step.aborted` fires together with `heartbeat_lost` when a running `StepRun` is atomically aborted in the same transaction. Neither event carries PII — `worker_id` is a `<hostname>-<pid>-<slot>` string.
+
 ## Effective Access Store (EAS)
 
 The EAS is a read model built from `aurelion.events`. The `mq_eas_projection_consumer` subscribes to the bus and applies changes incrementally, guarded by CAS to prevent duplicates.
