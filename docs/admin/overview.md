@@ -16,7 +16,7 @@ API and the CLI.
 | Register an application | `al app create` | [Application](../reference/applications.md) |
 | Disable an application | `PATCH /api/v0/applications/{id}` with `is_active: false` | [Application](../reference/applications.md) |
 | Inspect connector status | `al app connectors list` | [Connector Instance](../reference/connectors.md) |
-| Trigger a reconciliation | `al reconciliation run --application-id <uuid>` | [Reconciliation](../reference/reconciliation.md) |
+| Trigger a reconciliation | `al inventory-reconcile run --application-id <uuid>` | [Reconciliation](../reference/reconciliation.md) |
 | Inspect access for a subject | `al inventory access-facts list --subject <uuid>` | [Access Fact](../reference/access-facts.md) |
 | Manage platform secrets | `al secrets create` / `get` / `list` | [Secrets](../reference/secrets.md) |
 | Read operational logs | `al logs read` | [Logs](../reference/logs.md) |

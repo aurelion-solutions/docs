@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-05-13
+
+### Added
+
+- Phase 19 Access Plan Engine documentation complete
+- `docs/concepts/access-planning.md` — new Concepts page: declarative planning model, diff/DAG engine, initiative lifecycle, multi-transport invocation
+- `docs/operations/access-plan.md` — operator runbook: plan lifecycle, status values, invalidation_reason semantics, requires_confirmation, dry-run, lease diagnosis, stuck execution triage
+- `docs/reference/access-plan-api.md` — REST contract: all 5 access-plan endpoints, request/response shapes, 409 codes, error shape, event semantics
+- `docs/reference/connector-descriptor.md` — connector descriptor reference: dependency_rules, cross-app deps, account_status.transitions, cascades.before_disable, verify_fact_supported, supported_fact_kinds
+- `docs/reference/access-apply.md` — access-apply engine reference: execute_plan action, F3 chain, lease semantics, restart recovery
+
+### Changed
+
+- `mkdocs.yml` nav updated with Phase 19 pages (concepts, operations, reference sections)
+- Engine rename updates across docs: `reconciliation` → `inventory_reconcile`, `sync_apply` → `inventory_sync`, `effective_access` → `access_effective`, `provisioning` → `access_apply`
+- `docs/concepts/reconciliation.md`, `docs/reference/reconciliation.md`, `docs/guides/run-reconciliation.md` updated for `inventory_reconcile` rename
+- `docs/reference/provisioning.md` updated for `access_apply` rename
+- Various concept and reference pages updated to reflect Phase 19 engine architecture
+
 ## [0.5.0] - 2026-05-12
 
 ### Added

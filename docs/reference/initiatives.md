@@ -1,8 +1,26 @@
 # Initiative
 
-Records *why* an AccessFact exists — the business justification behind a grant. An initiative is always linked to an AccessFact and carries a type, an origin string, and an optional validity window.
+Records *why* an AccessFact exists — the business justification behind a grant. An initiative is always linked to an AccessFact, carries a typed origin, and an optional validity window.
 
-Initiatives have no delete endpoint by design. To remove access, revoke the AccessFact.
+Initiatives are immutable for audit purposes. To remove access, revoke the AccessFact; the linked initiative is **not deleted**, its `valid_until` is set to `now()` so the audit trail survives the revoke. Phase 19 codified this — there is no delete endpoint by design.
+
+## Typed origin
+
+Phase 19 made initiatives the canonical metadata-on-access-fact carrier with a structured `origin` string. The format is `<type>:<id>` and is consumed by `policy_assessment.generative` to decide whether a fact survives the next replan.
+
+| `type` | `origin` format | Meaning |
+|---|---|---|
+| `birthright` | `policy_rule:<rule_id>` | Granted by a policy rule (e.g. department membership) |
+| `requested` | `request:<request_id>` | Granted via an access request |
+| `delegated` | `delegation:<delegator_subject_ref>` | Delegated by another subject |
+| `grace` | `grace:<source_initiative_id>` | Grace period following revocation of the source initiative |
+| `inherited` | implementation-specific | Inherited from a group or org-unit ancestor |
+| `self_registered` | implementation-specific | Subject registered themselves |
+| `invited` | implementation-specific | Granted via invite flow |
+| `trial` | implementation-specific | Time-bounded trial access |
+| `subscription` | implementation-specific | Subscription-driven access |
+
+`policy_rule:<rule_id>` and `grace:<source_initiative_id>` are load-bearing for the declarative-planning flow — they let `policy_assessment.generative` distinguish "this should be re-emitted from the same rule" from "this came from elsewhere and stays put".
 
 ## Key fields
 
@@ -10,10 +28,10 @@ Initiatives have no delete endpoint by design. To remove access, revoke the Acce
 |---|---|---|
 | `id` | UUID | Primary key |
 | `access_fact_id` | UUID | FK to AccessFact |
-| `type` | enum | `birthright`, `requested`, `delegated`, `inherited`, `grace`, `self_registered`, `invited`, `trial`, `subscription` |
-| `origin` | string | Free-form justification (ticket ID, approver, system name) |
+| `type` | enum | See typed-origin table above |
+| `origin` | string | `<type>:<id>` (see typed-origin table) |
 | `valid_from` | datetime | Start of validity window |
-| `valid_until` | datetime | End of validity window (null = open-ended) |
+| `valid_until` | datetime \| null | End of validity window (null = open-ended; set to `now()` on revoke) |
 
 ## API
 
@@ -23,6 +41,8 @@ Initiatives have no delete endpoint by design. To remove access, revoke the Acce
 | `GET` | `/api/v0/initiatives/{id}` | Get by ID |
 | `POST` | `/api/v0/initiatives` | Create |
 | `PATCH` | `/api/v0/initiatives/{id}` | Update `origin`, `valid_from`, `valid_until` |
+
+No `DELETE` — revoking an access fact sets the initiative's `valid_until` to `now()` rather than removing the row.
 
 ## CLI
 

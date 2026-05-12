@@ -50,7 +50,7 @@ steps:
 
   - name: provision_access
     type: engine_call
-    engine: provisioning
+    engine: access_apply
     action: apply_grant
     args:
       request_id: "{{ run.args.request_id }}"

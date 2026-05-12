@@ -1,6 +1,6 @@
 # Access Fact
 
-The normalized current-state access record: "Subject X has Action Y on Resource Z." This is what downstream engines (PDP, SoD, EAS) consume. Facts are created and revoked by `SyncApplyService` from approved reconciliation delta items; the REST surface is read-only.
+The normalized current-state access record: "Subject X has Action Y on Resource Z." This is what downstream engines (PDP, EAS, `access_plan`) consume. Facts are created and revoked by `inventory_sync` (formerly `sync_apply`); the REST surface is read-only.
 
 ## Key fields
 
@@ -13,18 +13,37 @@ The normalized current-state access record: "Subject X has Action Y on Resource 
 | `action_slug` | string | One of the seven seeded action slugs |
 | `effect` | string | `allow` or `deny` |
 | `is_active` | boolean | False when revoked |
-| `revoked_at` | datetime | Set when the fact is revoked |
-| `valid_from` | datetime | Start of validity window (nullable) |
-| `valid_until` | datetime | End of validity window (nullable) |
+| `revoked_at` | datetime \| null | Set when the fact is revoked; nullable for active rows |
+| `valid_from` | datetime \| null | Start of validity window; nullable |
+| `valid_until` | datetime \| null | End of validity window; nullable |
+| `observed_at` | datetime \| null | When the connector last saw this fact; nullable |
+| `event_key` | string \| null | Wire-level idempotency key `hash(plan_item_id, op)`. Set when the fact was produced by an `access_plan` apply via `inventory_sync.sync_single_fact`; null for reconciliation-driven writes (Phase 19 B1 added the column to the Iceberg schema via `ALTER TABLE normalized.access_facts`). |
+
+`valid_from`, `valid_until`, `observed_at`, and `revoked_at` were made nullable on `AccessFactView`/`AccessFactRead` in Phase 19 H4 to match the actual lake schema — previous Pydantic schemas wrongly required them.
+
+## List response display fields
+
+`GET /api/v0/access-facts` items carry read-only display fields populated by `batch_*_display` helpers (Phase 19 H5):
+
+| Field | Type | Notes |
+|---|---|---|
+| `subject_display` | string \| null | Display name of the bound subject; resolved via `subjects.id → employees | nhis → persons` (Phase 19 H6) |
+| `account_display` | string \| null | Account's `username` |
+| `resource_display` | string \| null | Resource label |
+| `application_code` | string \| null | Owning application's `code` |
+| `application_name` | string \| null | Owning application's display name |
+| `change_summary` | string \| null | Short human-readable summary of the last change (e.g. "granted by birthright") |
+
+All display fields are nullable and fall back to UUIDs when no display value is available.
 
 ## API
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/v0/access-facts` | List, filter by `subject_id`, `resource_id`, `account_id`, `action_slug`, `effect`, `is_active`, `valid_at` |
+| `GET` | `/api/v0/access-facts` | List, filter by `subject_id`, `resource_id`, `account_id`, `action_slug`, `effect`, `is_active`, `valid_at`. Items carry display fields. |
 | `GET` | `/api/v0/access-facts/{id}` | Get by ID |
 
-Read-only. Facts are managed exclusively by `SyncApplyService` (see [Reconciliation reference / Apply runs](reconciliation.md#apply-runs)). `inventory.access_fact.{created,updated,revoked,reactivated}` events are emitted only from that service and carry `delta_item_id`, `snapshot_id`, and `reconciliation_run_id`.
+Read-only. Facts are managed exclusively by `inventory_sync` (see [Reconciliation reference / Apply runs](reconciliation.md#apply-runs)) and by `access_plan` apply via `inventory_sync.sync_single_fact`. `inventory.access_fact.{created,updated,revoked,reactivated}` events are emitted only from that engine and carry `delta_item_id`, `snapshot_id`, and `reconciliation_run_id` (the latter is null for plan-driven writes).
 
 ## CLI
 

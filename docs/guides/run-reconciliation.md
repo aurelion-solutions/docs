@@ -19,7 +19,7 @@ Reconciliation compares the latest artifact snapshot for an application against 
 ## Run via API
 
 ```bash
-curl -X POST http://localhost:8000/api/v0/reconciliation/runs \
+curl -X POST http://localhost:8000/api/v0/inventory-reconciles/runs \
   -H "Content-Type: application/json" \
   -d '{
         "application_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -45,7 +45,7 @@ Successful response (truncated):
 ## Run via CLI
 
 ```bash
-al reconciliation run --application-id <application-uuid>
+al inventory-reconcile run --application-id <application-uuid>
 ```
 
 The CLI defaults to `mode=review`. CLI flags for `dry_run` / fetching delta items land in a later phase.
@@ -55,20 +55,20 @@ The CLI defaults to `mode=review`. CLI flags for `dry_run` / fetching delta item
 Fetch the run record:
 
 ```bash
-curl http://localhost:8000/api/v0/reconciliation/runs/<run-id>
+curl http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>
 ```
 
 Page through the delta items:
 
 ```bash
 # First page
-curl "http://localhost:8000/api/v0/reconciliation/runs/<run-id>/delta-items?limit=100"
+curl "http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>/delta-items?limit=100"
 
 # Filter by status
-curl "http://localhost:8000/api/v0/reconciliation/runs/<run-id>/delta-items?status=create"
+curl "http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>/delta-items?status=create"
 
 # Next page — pass next_cursor back unchanged
-curl "http://localhost:8000/api/v0/reconciliation/runs/<run-id>/delta-items?cursor=<next_cursor>"
+curl "http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>/delta-items?cursor=<next_cursor>"
 ```
 
 When the response's `next_cursor` is `null`, you have read the full list.
@@ -92,7 +92,7 @@ The engine emits a sequence of events on `aurelion.events`:
 
 All four events share `run_id` and `correlation_id`. See [Events and Logs](../concepts/events.md#reconciliation-event-ordering) for ordering rules.
 
-When `mode=auto_apply` (or after a manual apply call — see below), `SyncApplyService` additionally emits one `inventory.access_fact.{created,updated,revoked,reactivated}` event per applied delta item. Each carries `delta_item_id`, `snapshot_id`, and `reconciliation_run_id`.
+When `mode=auto_apply` (or after a manual apply call — see below), `inventory_sync` (renamed from `sync_apply` in Phase 19) additionally emits one `inventory.access_fact.{created,updated,revoked,reactivated}` event per applied delta item. Each carries `delta_item_id`, `snapshot_id`, and `reconciliation_run_id`.
 
 For full request/response shapes, see the [Reconciliation reference](../reference/reconciliation.md).
 
@@ -101,7 +101,7 @@ For full request/response shapes, see the [Reconciliation reference](../referenc
 If you ran with `mode=review`, the run is left in `pending_apply` with delta items that you can mark `approved`, then trigger apply explicitly:
 
 ```bash
-curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
+curl -X POST http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>/apply \
   -H "Content-Type: application/json" \
   -d '{"mode": "manual_apply"}'
 ```
@@ -109,7 +109,7 @@ curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
 Apply only the items you select:
 
 ```bash
-curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
+curl -X POST http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>/apply \
   -H "Content-Type: application/json" \
   -d '{"mode": "selected_items", "item_ids": ["<delta-item-uuid>", "..."]}'
 ```
@@ -117,7 +117,7 @@ curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
 Dry-run the apply preflight without writing to the lake:
 
 ```bash
-curl -X POST http://localhost:8000/api/v0/reconciliation/runs/<run-id>/apply \
+curl -X POST http://localhost:8000/api/v0/inventory-reconciles/runs/<run-id>/apply \
   -H "Content-Type: application/json" \
   -d '{"mode": "dry_run"}'
 ```

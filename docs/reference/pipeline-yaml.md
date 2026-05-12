@@ -95,13 +95,13 @@ Calls a registered engine action. `name`, `engine`, and `action` are required.
 
 ```yaml
 steps:
-  - name: reconcile          # required; unique within pipeline
-    engine: reconciliation   # required
-    action: run              # required
+  - name: reconcile                 # required; unique within pipeline
+    engine: inventory_reconcile     # required
+    action: run                     # required
     args:
       application_id: "${args.application_id}"
-    requires: []             # optional; list of step names that must complete first
-    on_error: fail           # optional; "fail" (default) or "continue"
+    requires: []                    # optional; list of step names that must complete first
+    on_error: fail                  # optional; "fail" (default) or "continue"
     retry: {}                # optional; retry policy (schema expanded post-Step 18)
 ```
 
@@ -207,13 +207,13 @@ pipeline:
 
   steps:
     - name: reconcile
-      engine: reconciliation
+      engine: inventory_reconcile
       action: run
       args:
         application_id: "${args.application_id}"
 
     - name: master_data_apply_person
-      engine: reconciliation
+      engine: inventory_reconcile
       action: master_data_apply
       args:
         run_id: "${steps.reconcile.result.run_id}"
@@ -221,7 +221,7 @@ pipeline:
       requires: [reconcile]
 
     - name: master_data_apply_org_unit
-      engine: reconciliation
+      engine: inventory_reconcile
       action: master_data_apply
       args:
         run_id: "${steps.reconcile.result.run_id}"
@@ -229,15 +229,23 @@ pipeline:
       requires: [reconcile]
 
     - name: master_data_apply_employee
-      engine: reconciliation
+      engine: inventory_reconcile
       action: master_data_apply
       args:
         run_id: "${steps.reconcile.result.run_id}"
         entity_type: employee
       requires: [reconcile]
 
-    - name: sync_apply
-      engine: sync_apply
+    - name: master_data_apply_account
+      engine: inventory_reconcile
+      action: master_data_apply
+      args:
+        run_id: "${steps.reconcile.result.run_id}"
+        entity_type: account
+      requires: [reconcile]
+
+    - name: inventory_sync
+      engine: inventory_sync
       action: apply
       args:
         reconciliation_run_id: "${steps.reconcile.result.run_id}"
@@ -246,26 +254,28 @@ pipeline:
         - master_data_apply_person
         - master_data_apply_org_unit
         - master_data_apply_employee
+        - master_data_apply_account
 
     - name: project_eas
-      engine: effective_access
+      engine: access_effective
       action: project_application
       args:
         application_id: "${args.application_id}"
         now: "${args.now}"
-      requires: [sync_apply]
+      requires: [inventory_sync]
 ```
 
 **Step table**
 
 | Step | Engine | Action | Requires |
 |---|---|---|---|
-| `reconcile` | `reconciliation` | `run` | — |
-| `master_data_apply_person` | `reconciliation` | `master_data_apply` (entity_type=person) | reconcile |
-| `master_data_apply_org_unit` | `reconciliation` | `master_data_apply` (entity_type=org_unit) | reconcile |
-| `master_data_apply_employee` | `reconciliation` | `master_data_apply` (entity_type=employee) | reconcile |
-| `sync_apply` | `sync_apply` | `apply` (mode=auto_apply) | master_data_apply_* |
-| `project_eas` | `effective_access` | `project_application` | sync_apply |
+| `reconcile` | `inventory_reconcile` | `run` | — |
+| `master_data_apply_person` | `inventory_reconcile` | `master_data_apply` (entity_type=person) | reconcile |
+| `master_data_apply_org_unit` | `inventory_reconcile` | `master_data_apply` (entity_type=org_unit) | reconcile |
+| `master_data_apply_employee` | `inventory_reconcile` | `master_data_apply` (entity_type=employee) | reconcile |
+| `master_data_apply_account` | `inventory_reconcile` | `master_data_apply` (entity_type=account) | reconcile |
+| `inventory_sync` | `inventory_sync` | `apply` (mode=auto_apply) | master_data_apply_* |
+| `project_eas` | `access_effective` | `project_application` | inventory_sync |
 
 **Pipeline args:** `application_id` (UUID), `now` (ISO-8601 datetime for projection timestamp).
 
@@ -281,7 +291,7 @@ Phase 18 Step 21. See [Connector Results](connector-results.md#payload-fields).
 The pipeline can be driven end-to-end by MQ; manual `POST /pipeline-runs`
 remains valid for replay.
 
-`effective_access.project_application` is registered with `idempotent=True`, so
+`access_effective.project_application` is registered with `idempotent=True`, so
 the runner is free to retry the `project_eas` step. The fan-out
 `master_data_apply_{person,org_unit,employee}` steps are independently idempotent.
 

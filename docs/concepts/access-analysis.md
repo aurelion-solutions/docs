@@ -1,5 +1,7 @@
 # Access Analysis
 
+> **After Phase 19, Access Analysis remains as a sibling engine, not the canonical IGA flow.** The new declarative IGA path goes through `policy_assessment.generative` → `access_plan` → `access_apply` (see [Declarative Access Planning](access-planning.md)). Access Analysis still owns capability projection, SoD scans, batch findings, and the deterministic report — these are the *retrospective* questions ("what is wrong right now across the population?"). The *prescriptive* questions ("what should this subject's access look like?") moved to `access_plan`.
+
 Access Analysis is the layer that turns the raw "who can do what on which resource" graph into a vocabulary the business understands — **capabilities** — and uses that vocabulary to reason about Segregation of Duties (SoD).
 
 It sits between the Effective Access Store (EAS — the normalized current-state projection of access) and the higher-level governance products. It does not own the raw grants; it interprets them.

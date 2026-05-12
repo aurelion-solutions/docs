@@ -50,7 +50,7 @@ of side effect.
 
 **Lake-level dedup.** Actions that write to the Iceberg data lake
 first scan for already-written rows before writing. The reconciliation
-`sync_apply` action, for example, performs a DuckDB batch scan against
+`inventory_sync` action, for example, performs a DuckDB batch scan against
 `normalized.access_facts` to find items whose `reconciliation_delta_item_id`
 is already present. Items found in the lake are marked `applied` in
 Postgres without a redundant write; the Iceberg writer only touches

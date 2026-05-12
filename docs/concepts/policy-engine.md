@@ -73,6 +73,19 @@ actions:     [concrete actions for this Application]
 
 Rules are declarative and do not require a service restart when changed — the PDP reads them at startup.
 
+## Generative method
+
+Phase 19 added a second top-level entry point alongside the per-request evaluator: `policy_assessment.generative`. It is stateless and answers a different question — not "is this single access decision allow or deny", but "given this subject's context, what facts should they hold right now?".
+
+```
+(subject_ref, subject_type, subject_context,
+ current_facts, current_initiatives) -> list[ProjectedFact]
+```
+
+Each `ProjectedFact` carries a `Decision` with `actions`, `signals`, and `reasons` — same shape as the per-request evaluator output. This is what the `access_plan` engine consumes to compute desired state. The method is pure: no DB writes, no events, no logging side effects.
+
+See [Declarative Access Planning](access-planning.md) for the end-to-end flow.
+
 ## Strategies
 
 The PDP is a dispatcher in front of two assessment strategies, plus a third evaluation path for file-based policy cartridges:

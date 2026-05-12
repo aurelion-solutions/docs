@@ -16,16 +16,17 @@ state outside the same database that holds the domain it operates on.
 The orchestrator is therefore a Layer-0 platform primitive, alongside
 the database, the message queue, and the logs subsystem.
 
-## Not to be confused with access_orchestration
+## Not to be confused with access_plan
 
-There are two things in the codebase with the word "orchestrator" in
-their name. They are unrelated:
+There are two things in the codebase that sound like "orchestrator" or
+"plan". They are unrelated:
 
 - **`platform/orchestrator/`** — the generic, YAML-driven pipeline
   engine described on this page. Knows nothing about identity.
-- **`engines/access_orchestration/`** — an IGA-domain engine that
-  takes intent ("grant Alice the Finance role") and produces a plan
-  of account-level changes. Knows nothing about pipelines.
+- **`engines/access_plan/`** (renamed from `access_orchestration` in
+  Phase 19) — an IGA-domain engine that diffs desired vs current access
+  and produces an immutable plan of operations. Knows nothing about
+  pipelines. See [Declarative Access Planning](access-planning.md).
 
 The first is a platform primitive. The second is a capability engine
 that happens to live one layer up and may itself be invoked from a

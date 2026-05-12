@@ -56,7 +56,7 @@ Only `service.py` emits events. Never models, never routes.py, never engine orch
 
 This is not just a convention — it is an invariant. If an event is emitted from two places, that is a bug: either deduplicate or merge the call sites.
 
-The single-emitter rule is enforced per event family. For example, `inventory.access_fact.{created,updated,revoked,reactivated}` is emitted **only** from `engines/sync_apply/service.py` — `AccessFactService` mutating methods do not emit. The rationale: `normalized.access_facts` is owned by Iceberg via `lake_writer`, and `SyncApplyService` is the only path that writes to it.
+The single-emitter rule is enforced per event family. For example, `inventory.access_fact.{created,updated,revoked,reactivated}` is emitted **only** from `engines/inventory_sync/service.py` — `AccessFactService` mutating methods do not emit. The rationale: `normalized.access_facts` is owned by Iceberg via `lake_writer`, and `inventory_sync` (renamed from `sync_apply` in Phase 19) is the only path that writes to it.
 
 ## Per-row vs per-batch
 
@@ -91,7 +91,7 @@ Consumers that care about ordering must sort by `occurred_at` from the envelope.
 
 ## Access fact events
 
-`inventory.access_fact.{created,updated,revoked,reactivated}` is fired per delta item by `SyncApplyService` during apply. Every payload carries three traceability fields in addition to the per-fact data:
+`inventory.access_fact.{created,updated,revoked,reactivated}` is fired per delta item by `inventory_sync` during apply (renamed from `SyncApplyService` in Phase 19). Every payload carries three traceability fields in addition to the per-fact data:
 
 | Field | Why it is there |
 |---|---|
@@ -114,6 +114,21 @@ Key routing keys introduced in Phase 18:
 | `pipeline.step.aborted` | Active step marked `aborted` during reclaim or drain | `step_run_id`, `step_name`, `attempt`, `reason` |
 
 `pipeline.run.heartbeat_lost` fires when a worker's DB heartbeat goes silent for more than 10 seconds and another worker's reclaim sweep picks up the run. `pipeline.step.aborted` fires together with `heartbeat_lost` when a running `StepRun` is atomically aborted in the same transaction. Neither event carries PII — `worker_id` is a `<hostname>-<pid>-<slot>` string.
+
+## Replan matcher routing keys (Phase 19)
+
+The `access_plan` engine subscribes to a small set of events that signal "this subject's context changed; rebuild the plan". The matcher is fan-out — a single trigger event can produce N plans (e.g. `application.decommissioned` produces one plan per NHI in that application).
+
+| Routing key | Producer | What it triggers |
+|---|---|---|
+| `subject.context.changed` | Inventory services (employee/NHI) | New plan for the affected subject |
+| `subject.employment_status.changed` | `EmployeeService` | New plan reflecting hire / terminate / transfer |
+| `subject.scheduled_replan_required` | `initiatives_scheduled_replan_scan` pipeline | New plan after a future `valid_from` / `valid_until` boundary crossed |
+| `initiative.changed` | `InitiativeService` | New plan after an initiative's window was edited |
+| `nhi.expired` | NHI lifecycle services | New plan after an NHI expired |
+| `application.decommissioned` | Application service | Fan-out: one plan per NHI in the decommissioned application |
+
+The matcher uses the multi-transport action pattern described in [Declarative Access Planning](access-planning.md#the-multi-transport-action-pattern) — the same `access_plan.create_plan_for_subject` service method is reachable through REST, pipeline action, and this MQ subscription.
 
 ## Effective Access Store (EAS)
 

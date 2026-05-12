@@ -5,9 +5,9 @@ Aurelion is built as a three-layer pyramid. Layers define what each part owns an
 ```
 ┌─────────────────────────────────────────┐
 │  Engines (Layer 2)                      │  engines and orchestrators
-│  reconciliation · ingest · provisioning │
-│  effective_access · policy_assessment   │
-│  access_analysis · access_orchestration │
+│  inventory_reconcile · ingest · access_apply │
+│  access_effective · policy_assessment        │
+│  access_analysis · access_plan               │
 ├─────────────────────────────────────────┤
 │  Inventory (Layer 1)                    │  domain data and its API
 │  persons · accounts · access facts ...  │
@@ -43,13 +43,13 @@ Engines actively *do* something with data: ingest, reconcile, project, assess, o
 Current engines:
 
 - **`ingest`** — connector result ingestion (ingress).
-- **`reconciliation`** — set-diff between observed and current state per application (ingress).
-- **`sync_apply`** — applies the reconciliation delta into the lake's `normalized.access_facts` table (ingress / internal).
-- **`effective_access`** — builds and maintains the current factual access picture (Effective Access Store).
+- **`inventory_reconcile`** — set-diff between observed and current state per application (ingress).
+- **`inventory_sync`** — applies the reconciliation delta into the lake's `normalized.access_facts` table (ingress / internal).
+- **`access_effective`** — builds and maintains the current factual access picture (Effective Access Store).
 - **`policy_assessment`** — evaluates policy against facts and context, returning a `PolicyAssessmentOutput` / `Decision`. Has two strategies: `deterministic` (YAML rule-pack) and `semantic_assisted` (semantic evidence extraction over `platform/llm`).
 - **`access_analysis`** — batch / retrospective analysis of existing access state (capability projection, SoD scans, findings).
-- **`access_orchestration`** — live orchestration of intents to change or validate access: employee requests, JML events, manager and admin actions, remediation, SoD mitigation, API/import-driven operations. Delegates to `policy_assessment`, `effective_access`, `provisioning`, and (later) workflow.
-- **`provisioning`** — applies access changes to external systems (egress).
+- **`access_plan`** — live orchestration of intents to change or validate access: employee requests, JML events, manager and admin actions, remediation, SoD mitigation, API/import-driven operations. Delegates to `policy_assessment`, `access_effective`, `access_apply`, and (later) workflow.
+- **`access_apply`** — applies access changes to external systems (egress).
 
 ## Where to put new code
 
@@ -59,3 +59,22 @@ Current engines:
 | Infrastructure service (connector, logs, LLM provider) | Platform |
 | Multi-step process or engine | Engines |
 | Shared mechanics with no domain meaning (sessions, queues) | `core/` |
+
+## Multi-transport action pattern
+
+Phase 19 codified an architectural invariant for engine actions that can be triggered from more than one place: **business logic lives in `service.py`, and three thin transports invoke the same service method.**
+
+```
+              ┌─────────────────────────────┐
+              │   service.py — one impl     │
+              └──────────────┬──────────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        ▼                    ▼                    ▼
+   REST handler        Pipeline action       MQ matcher
+   (routes.py)         (engine_actions/)     (subscription wiring)
+```
+
+Each transport is responsible only for parsing its input (HTTP body / step args / event payload) and shaping its response. None of them owns business behaviour. Adding a fourth transport (CLI, gRPC, scheduled task) must not require a parallel reimplementation of the logic.
+
+The replan path in `access_plan` is the canonical example — the same `create_plan_for_subject` service method is reachable through `POST /plans`, through a pipeline action node, and through the MQ replan matcher subscribed to `subject.*.changed` events.

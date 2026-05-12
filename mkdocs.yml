@@ -33,6 +33,7 @@ nav:
       - Access Model: concepts/access-model.md
       - Normalization: concepts/normalization.md
       - Reconciliation: concepts/reconciliation.md
+      - Declarative Access Planning: concepts/access-planning.md
       - Policy Decision Point: concepts/policy-engine.md
       - Policy Cartridges: concepts/policy-cartridges.md
       - Access Analysis: concepts/access-analysis.md
@@ -93,7 +94,9 @@ nav:
           - Application: reference/applications.md
           - Connector Instance: reference/connectors.md
           - Reconciliation: reference/reconciliation.md
-          - Provisioning: reference/provisioning.md
+          - Access Apply: reference/access-apply.md
+          - Access Plan API: reference/access-plan-api.md
+          - Connector Descriptor: reference/connector-descriptor.md
           - Connector Results: reference/connector-results.md
           - Pipeline Orchestrator:
               - YAML grammar: reference/pipeline-yaml.md
@@ -115,6 +118,7 @@ nav:
       - Overview: operations/overview.md
       - Administration: admin/overview.md
       - Runbooks:
+          - Access Plan: operations/access-plan.md
           - Policy Cartridge Operations: operations/policy-cartridge-operations.md
           - Engineering Studio Troubleshooting: guides/engineering-studio-troubleshooting.md
       - Runtimes:

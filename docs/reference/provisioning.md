@@ -1,47 +1,8 @@
-# Provisioning
+# Provisioning (renamed)
 
-Sends account create and delete commands to a connector for a specific application. Provisioning is a fire-and-forward operation — the platform enqueues the command over RabbitMQ and returns immediately. Results are reported back asynchronously via [Connector Results](connector-results.md).
+> **This page is a redirect.** The engine was renamed in Phase 19 from `provisioning` to `access_apply`. See [Access Apply](access-apply.md) for the canonical reference, including the new plan-driven execution path.
 
-## API
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/v0/applications/{id}/accounts` | Create an account in the application |
-| `DELETE` | `/api/v0/applications/{id}/accounts/{username}` | Delete an account in the application |
-
-### Create account — request body
-
-```json
-{
-  "username": "jdoe",
-  "email": "jdoe@example.com"
-}
-```
-
-**201 Created** — account creation command dispatched.
-
-### Delete account
-
-**204 No Content** — account deletion command dispatched.
-
-### Errors
-
-| Code | Condition |
-|---|---|
-| 404 | Application not found |
-| 422 | Validation failure |
-| 503 | No connector instance available for the application's tags |
-
-## No CLI equivalent
-
-Provisioning is API-only. Use `curl` or an SDK client.
-
-```bash
-# Create
-curl -X POST http://localhost:8000/api/v0/applications/<id>/accounts \
-  -H "Content-Type: application/json" \
-  -d '{"username": "jdoe", "email": "jdoe@example.com"}'
-
-# Delete
-curl -X DELETE http://localhost:8000/api/v0/applications/<id>/accounts/jdoe
-```
+The legacy direct `POST /api/v0/applications/{id}/accounts` and
+`DELETE /api/v0/applications/{id}/accounts/{username}` endpoints still exist
+for backward compatibility — documented under
+[Access Apply / Legacy direct provisioning API](access-apply.md#legacy-direct-provisioning-api).
