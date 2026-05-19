@@ -1,6 +1,6 @@
 # Access Fact
 
-The normalized current-state access record: "Subject X has Action Y on Resource Z." This is what downstream engines (PDP, EAS, `access_plan`) consume. Facts are created and revoked by `inventory_sync` (formerly `sync_apply`); the REST surface is read-only.
+The normalized current-state access record: "Subject X has Action Y on Resource Z." This is what downstream engines (PDP, EAS, `access_plan`) consume. Facts are created and revoked by `inventory_sync`; the REST surface is read-only.
 
 ## Key fields
 
@@ -17,17 +17,17 @@ The normalized current-state access record: "Subject X has Action Y on Resource 
 | `valid_from` | datetime \| null | Start of validity window; nullable |
 | `valid_until` | datetime \| null | End of validity window; nullable |
 | `observed_at` | datetime \| null | When the connector last saw this fact; nullable |
-| `event_key` | string \| null | Wire-level idempotency key `hash(plan_item_id, op)`. Set when the fact was produced by an `access_plan` apply via `inventory_sync.sync_single_fact`; null for reconciliation-driven writes (Phase 19 B1 added the column to the Iceberg schema via `ALTER TABLE normalized.access_facts`). |
+| `event_key` | string \| null | Wire-level idempotency key `hash(plan_item_id, op)`. Set when the fact was produced by an `access_plan` apply via `inventory_sync.sync_single_fact`; null for reconciliation-driven writes. |
 
-`valid_from`, `valid_until`, `observed_at`, and `revoked_at` were made nullable on `AccessFactView`/`AccessFactRead` in Phase 19 H4 to match the actual lake schema — previous Pydantic schemas wrongly required them.
+`valid_from`, `valid_until`, `observed_at`, and `revoked_at` are nullable on `AccessFactView`/`AccessFactRead` to match the lake schema.
 
 ## List response display fields
 
-`GET /api/v0/access-facts` items carry read-only display fields populated by `batch_*_display` helpers (Phase 19 H5):
+`GET /api/v0/access-facts` items carry read-only display fields populated by `batch_*_display` helpers:
 
 | Field | Type | Notes |
 |---|---|---|
-| `subject_display` | string \| null | Display name of the bound subject; resolved via `subjects.id → employees | nhis → persons` (Phase 19 H6) |
+| `subject_display` | string \| null | Display name of the bound subject; resolved via `subjects.id → employees | nhis → persons` |
 | `account_display` | string \| null | Account's `username` |
 | `resource_display` | string \| null | Resource label |
 | `application_code` | string \| null | Owning application's `code` |

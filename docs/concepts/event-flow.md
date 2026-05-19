@@ -105,8 +105,7 @@ The trade-off is reversible. Interposing an outbox requires changing
 `EventService.emit` to also write to an `events_outbox` row in the
 same transaction, then adding a relay. The change is bounded to the
 event infrastructure layer and does not require touching each call
-site individually. The open decision is tracked in
-`aurelion-mas/feedbacks/2026-05-10-event-outbox-todo.md`.
+site individually.
 
 ## Correlation
 

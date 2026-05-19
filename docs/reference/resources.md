@@ -33,12 +33,10 @@ Extensible via key-value attributes.
 
 | Command | Description |
 |---|---|
-| `al inventory resources list` | List all resources |
-| `al inventory resources list --application-id <id>` | Filter by application |
-| `al inventory resources list --kind <kind>` | Filter by resource type |
-| `al inventory resources get <id>` | Get by ID |
-| `al inventory resources create --application-id <id> --external-id <id> --kind <kind>` | Create |
-| `al inventory resources update <id> --privilege-level <level>` | Update |
-| `al inventory resources attributes <id>` | List attributes |
-| `al inventory resources add-attribute <id> <key> <value>` | Add attribute |
-| `al inventory resources remove-attribute <id> <key>` | Remove attribute |
+| `al inventory resources list` | List all resources. Supports `--application <id>`, `--kind <kind>`, `--privilege-level <level>`, `--environment <env>`, `--data-sensitivity <sens>`. |
+| `al inventory resources get <id>` | Get by ID. |
+| `al inventory resources create --external-id <ext> --application <id> --kind <kind>` | Create. Optional `--parent <id>`, `--path <path>`, `--description <text>`, `--privilege-level`, `--environment`, `--data-sensitivity`. |
+| `al inventory resources update <id>` | Partial update. Optional `--kind`, `--parent`, `--path`, `--description`, `--privilege-level`, `--environment`, `--data-sensitivity`. |
+| `al inventory resources attributes <id>` | List attributes for a resource. |
+| `al inventory resources add-attribute <id> --key <k> --value <v>` | Add an attribute. |
+| `al inventory resources remove-attribute <id> <key>` | Remove an attribute. |

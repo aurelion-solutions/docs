@@ -57,9 +57,8 @@ They are not re-enumerated here — `.env.example` is the single source of truth
 
 ## Out of scope
 
-Multi-slot executor concurrency and the HTTP health endpoint are **not** currently
-implemented. The executor runs a single slot (`slot_index=0`); these capabilities
-are deferred to Phase 18 Step 12b and must not be configured until that step ships.
+Multi-slot executor concurrency and the HTTP health endpoint are not implemented.
+The executor runs a single slot (`slot_index=0`) and must not be configured otherwise.
 
 ## Source of truth
 

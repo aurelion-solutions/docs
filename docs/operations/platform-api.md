@@ -39,7 +39,7 @@ See `aurelion-kernel/.env.example` for the full list.
 
 ### Switching the artifacts backend
 
-`LAKE_ARTIFACTS_WRITE_BACKEND` is a one-way migration gate, not a hot toggle. Flipping it does not move existing data — rows written under `pg` stay in PostgreSQL, rows written under `iceberg` stay in the lake. The one-shot PG → Iceberg backfill tool (`engines/lake_migration`) was retired in Phase 17 Step 13; all deployed environments completed the migration before retirement. Flipping back to `pg` after writes have landed in Iceberg leaves the lake-resident rows invisible to the API and re-routes new writes to PG — split-brain. If you need to roll back, restore from the pre-flip backup.
+`LAKE_ARTIFACTS_WRITE_BACKEND` is a one-way migration gate, not a hot toggle. Flipping it does not move existing data — rows written under `pg` stay in PostgreSQL, rows written under `iceberg` stay in the lake. Flipping back to `pg` after writes have landed in Iceberg leaves the lake-resident rows invisible to the API and re-routes new writes to PG — split-brain. If you need to roll back, restore from the pre-flip backup.
 
 ## Startup dependencies
 

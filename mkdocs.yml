@@ -29,6 +29,7 @@ nav:
 
   - Concepts:
       - Platform Layers: concepts/layers.md
+      - Domain Slice Pattern: concepts/domain-slice-pattern.md
       - Identity Model: concepts/identity-model.md
       - Access Model: concepts/access-model.md
       - Normalization: concepts/normalization.md
@@ -38,6 +39,7 @@ nav:
       - Policy Cartridges: concepts/policy-cartridges.md
       - Access Analysis: concepts/access-analysis.md
       - LLM Platform: concepts/llm-platform.md
+      - Notifications: concepts/notifications.md
       - Pipeline Orchestrator: concepts/pipeline-orchestrator.md
       - Idempotency and Reclaim: concepts/idempotency-and-reclaim.md
       - Heartbeat Architecture: concepts/heartbeat-architecture.md
@@ -65,6 +67,7 @@ nav:
           - Person: reference/persons.md
           - Employee: reference/employees.md
           - Employee Record: reference/employee-records.md
+          - Org Unit: reference/org-units.md
           - NHI: reference/nhi.md
           - Customer: reference/customers.md
           - Subject: reference/subjects.md
@@ -76,6 +79,7 @@ nav:
           - Access Fact: reference/access-facts.md
           - Artifact Binding: reference/artifact-bindings.md
           - Capability Grant: reference/capability-grants.md
+          - Effective Grant: reference/effective-grants.md
       - Governance:
           - Initiative: reference/initiatives.md
           - Ownership Assignment: reference/ownership-assignments.md
@@ -104,19 +108,25 @@ nav:
               - Action registry: reference/engine-action-registry.md
               - Events: reference/pipeline-events.md
           - Secrets: reference/secrets.md
+          - Storage Providers: reference/storage-providers.md
           - Data Lake: reference/data-lake.md
           - Logs: reference/logs.md
           - LLM Model: reference/llm-model.md
           - LLM Execution Profile: reference/llm-execution-profile.md
+          - Notifications: reference/notifications.md
           - Runtime settings: reference/runtime-settings.md
       - CLI:
           - Access Analysis: cli/access-analysis.md
+          - Events: cli/events.md
           - Lake: cli/lake.md
           - Pipelines: cli/pipelines.md
+          - Policy: cli/policy.md
 
   - Operations:
       - Overview: operations/overview.md
       - Administration: admin/overview.md
+      - Message Queue Topology: operations/message-queue.md
+      - Notifications: operations/notifications.md
       - Runbooks:
           - Access Plan: operations/access-plan.md
           - Policy Cartridge Operations: operations/policy-cartridge-operations.md

@@ -12,6 +12,13 @@ http://localhost:8000/api/v0/employees
 
 The `VITE_API_BASE_URL` environment variable (no trailing slash) configures the base URL for the GUI. The CLI uses `AURELION_API_URL` or the `--base-url` flag.
 
+## REST only
+
+The HTTP surface is REST exclusively. There is no GraphQL endpoint, no
+RPC tunnel, no batch mutation envelope. New surfaces follow the same
+shape: a route in `aurelion-kernel/src/<layer>/<slice>/routes.py`
+registered under `/api/v0/`, with one resource per path family.
+
 ## Request format
 
 All write requests use `Content-Type: application/json`. Requests without a body (GET, DELETE) do not need a Content-Type header.
@@ -90,7 +97,9 @@ The same value appears as `correlation_id` on every `EventEnvelope` and log reco
 
 ## Authentication
 
-Authentication is not implemented in the current version. The API is intended to run within a trusted network boundary. Do not expose it directly to the public internet.
+Authentication is not implemented. The API is intended to run within a
+trusted network boundary. Do not expose it directly to the public
+internet.
 
 ## Interactive docs
 

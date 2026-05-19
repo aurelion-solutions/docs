@@ -34,8 +34,8 @@ expand.
 Shipped categories:
 
 - **Customers** — lists customers from `GET /api/v0/customers`. Label: `external_id`. Description: `plan_tier`. Tooltip: `customer_id`, `tenant_id`, `mfa_enabled`, `is_locked`, `updated_at`.
-- **Access State** — multi-tab view of the access surface, replacing the separate `accessArtifacts` / `accessFacts` categories that existed before Phase 19. See [Access State multi-tab category](#access-state-multi-tab-category) below.
-- **Account State** — multi-tab view of accounts, replacing the flat `accounts` category. See [Account State multi-tab category](#account-state-multi-tab-category) below.
+- **Access State** — multi-tab view of the access surface. See [Access State multi-tab category](#access-state-multi-tab-category) below.
+- **Account State** — multi-tab view of accounts. See [Account State multi-tab category](#account-state-multi-tab-category) below.
 
 Creating, updating, and deleting inventory records is done through the REST
 API or the CLI — no webview forms or quick-pick mutations are exposed from
@@ -43,7 +43,7 @@ the Inventory view.
 
 ### Access State multi-tab category
 
-After Phase 19 the Studio merged the two legacy categories `accessArtifacts` and `accessFacts` into a single `accessState` node with three tabs framed by the declarative-planning lifecycle:
+The Studio exposes the access surface as a single `accessState` node with three tabs framed by the declarative-planning lifecycle:
 
 | Tab | Source | What it shows |
 |---|---|---|
@@ -51,7 +51,7 @@ After Phase 19 the Studio merged the two legacy categories `accessArtifacts` and
 | **Incoming** | `GET /api/v0/inventory-reconciles/delta-items?entity_type=access_fact&status!=unchanged` | Pending delta items from reconciliation runs — what the lake says should change |
 | **Outgoing** | `GET /api/v0/plans/items?execution_status=proposed,executing` | Plan items the executor is about to apply (or has just started applying) |
 
-Columns shared across tabs: **Application · Op · Subject · Target · Change · Time**. The columns are populated from the H5 display fields (`application_code`, `subject_display`, `account_display`, `resource_display`, `change_summary`) — no client-side resolution needed.
+Columns shared across tabs: **Application · Op · Subject · Target · Change · Time**. The columns are populated from server-side display fields (`application_code`, `subject_display`, `account_display`, `resource_display`, `change_summary`) — no client-side resolution needed.
 
 The node renders a diff-count badge driven by the cross-run `.../delta-items/count` and `/plans/items/count` endpoints — the badge fires when there is incoming or outgoing work pending for the visible scope.
 

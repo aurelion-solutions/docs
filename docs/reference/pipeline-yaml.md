@@ -172,8 +172,8 @@ recursive subset check. DB-side filtering uses Postgres `<@`.
 **Nested-list `<@` caveat** — containment for lists of objects is **not** fully
 supported in either path. Flat primitive lists are compared as sets (order-
 independent). Nested list comparison (e.g. lists of dicts) may produce false
-positives or false negatives. This limitation is documented and deferred to a
-later phase. Workaround: use top-level scalar predicates only for `match`.
+positives or false negatives. Workaround: use top-level scalar predicates only
+for `match`.
 
 The matcher acquires `pg_advisory_lock(_MATCHER_LOCK_KEY)` (defined in
 `matcher.py`) on a dedicated long-lived session at startup, ensuring only one
@@ -286,10 +286,10 @@ pipeline:
 | `application_id` | `application_id` | Staged at ingest |
 | `now` | `now` | Server-side timestamp stamped by `engines/ingest/service.py` at emit time |
 
-Both fields are present on every `connector.result.received` delivery since
-Phase 18 Step 21. See [Connector Results](connector-results.md#payload-fields).
-The pipeline can be driven end-to-end by MQ; manual `POST /pipeline-runs`
-remains valid for replay.
+Both fields are always present on `connector.result.received` deliveries —
+see [Connector Results](connector-results.md#payload-fields). The pipeline
+can be driven end-to-end by MQ; manual `POST /pipeline-runs` is also valid
+for replay.
 
 `access_effective.project_application` is registered with `idempotent=True`, so
 the runner is free to retry the `project_eas` step. The fan-out

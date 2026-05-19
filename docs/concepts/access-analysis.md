@@ -1,6 +1,6 @@
 # Access Analysis
 
-> **After Phase 19, Access Analysis remains as a sibling engine, not the canonical IGA flow.** The new declarative IGA path goes through `policy_assessment.generative` → `access_plan` → `access_apply` (see [Declarative Access Planning](access-planning.md)). Access Analysis still owns capability projection, SoD scans, batch findings, and the deterministic report — these are the *retrospective* questions ("what is wrong right now across the population?"). The *prescriptive* questions ("what should this subject's access look like?") moved to `access_plan`.
+> **Access Analysis is a sibling engine, not the canonical IGA flow.** The declarative IGA path goes through `policy_assessment.generative` → `access_plan` → `access_apply` (see [Declarative Access Planning](access-planning.md)). Access Analysis owns capability projection, SoD scans, batch findings, and the deterministic report — the *retrospective* questions ("what is wrong right now across the population?"). The *prescriptive* questions ("what should this subject's access look like?") live in `access_plan`.
 
 Access Analysis is the layer that turns the raw "who can do what on which resource" graph into a vocabulary the business understands — **capabilities** — and uses that vocabulary to reason about Segregation of Duties (SoD).
 
@@ -45,7 +45,7 @@ Mappings are stored as rows; deactivating a mapping (`is_active = false`) takes 
 
 A capability often makes sense only in a **scope**: "approve_payment up to $50,000", "edit_vendor in cost center EU-NORTH". Scopes are not freeform strings; they are typed by a **CapabilityScopeKey** declared per capability (`amount_limit`, `cost_center`, `legal_entity`, …).
 
-The scope value for a given grant is resolved from the underlying resource and subject attributes at projection time. Scope-aware features (notably the SoD evaluator in later phases) consume both the slug and the scope key/value pair.
+The scope value for a given grant is resolved from the underlying resource and subject attributes at projection time. Scope-aware features (notably the SoD evaluator) consume both the slug and the scope key/value pair.
 
 The pre-flight resolver described below intentionally ignores scope values — it answers the slug question only.
 
@@ -136,9 +136,9 @@ GET /api/v0/analytics/risk-by-application     →  ranked applications
 GET /api/v0/analytics/findings-summary        →  count-based digest
 ```
 
-The first two return a `risk_score`. The score is an MVP aggregation —
+The first two return a `risk_score`. The score is a simple aggregation —
 `Σ(severity_weight × open_findings_in_severity)` with weights
-`critical=100, high=50, medium=20, low=5` — and is intentionally **not** the canonical Aurelion risk model. It is good enough to rank the worst-offending subjects and applications today; it has the known limitation that 100 `low` findings outweigh one `critical`, and it must not be surfaced as "the" risk score in customer-facing reports. The canonical model is a future-phase concern. The two scored endpoints are computed in DuckDB over `normalized.access_facts` joined with the Postgres `findings` table; the lake is queried in-place via `iceberg_scan` and `kernel_pg.findings`, so analytics never duplicates PG data into the warehouse.
+`critical=100, high=50, medium=20, low=5` — and is intentionally **not** the canonical Aurelion risk model. It is good enough to rank the worst-offending subjects and applications today; it has the known limitation that 100 `low` findings outweigh one `critical`, and it must not be surfaced as "the" risk score in customer-facing reports. The two scored endpoints are computed in DuckDB over `normalized.access_facts` joined with the Postgres `findings` table; the lake is queried in-place via `iceberg_scan` and `kernel_pg.findings`, so analytics never duplicates PG data into the warehouse.
 
 The third endpoint, `findings-summary`, is Postgres-only and does **not** include a risk score. It returns totals, breakdowns by severity and by kind, top applications and top subjects, and a `quick_wins` list — high/critical findings of kinds with a clear corrective action (`orphan_access`, `terminated_access`, `unused_access`). `sod` and `privileged_access` are intentionally excluded from quick wins because they typically require policy review rather than a one-click revoke.
 
@@ -148,7 +148,7 @@ Field-level details, query parameters, sort orders, and the severity-weight tabl
 
 ## Deterministic report payload
 
-Once findings are persisted, downstream consumers — the Lens AI summary, future renderers (CLI, Studio, IGA, PDF generator) — need a stable structured input shape over kernel data. The `reports/` sub-slice of `access_analysis` provides exactly that:
+Once findings are persisted, downstream renderers (browser UIs, CLI, IDE integrations, PDF generators) need a stable structured input shape over kernel data. The `reports/` sub-slice of `access_analysis` provides exactly that:
 
 ```
 GET /api/v0/reports/deterministic  →  DeterministicReport
@@ -156,16 +156,16 @@ GET /api/v0/reports/deterministic  →  DeterministicReport
 
 The envelope composes the existing `FindingsSummary` (counts, breakdowns, top apps/subjects, quick wins) with three additional pieces: `top_findings` for the open `critical`/`high` population with denormalized evidence, `recommendations` derived from a fixed rule table over `FindingKind` × severity floor, and exactly five `executive_summary` blocks in a load-bearing order (`posture_overview`, `top_risks`, `quick_wins_overview`, `application_hotspots`, `subject_hotspots`).
 
-The endpoint is intentionally narrow: no LLM, no PDF or HTML rendering, no scan-run scope, no date-range filter, no per-application variant. The payload is global over currently open findings. AI summarises this payload — it does not produce findings, recommendations, or executive metrics. Field-level details and the recommendation rule table live in [Deterministic Report (reference)](../reference/deterministic-report.md).
+The endpoint is intentionally narrow: no LLM, no PDF or HTML rendering, no scan-run scope, no date-range filter, no per-application variant. The payload is global over currently open findings. A downstream AI summariser consumes this payload — it does not produce findings, recommendations, or executive metrics. Field-level details and the recommendation rule table live in [Deterministic Report (reference)](../reference/deterministic-report.md).
 
-The end-to-end loop, with Lens as the first consumer, looks like this:
+The end-to-end loop with a renderer that wants an AI-generated narrative on top of the deterministic payload looks like this:
 
 ```
-  kernel /reports/deterministic   ──>  Lens server-side page
+  kernel /reports/deterministic   ──>  renderer (server-side)
                                           │
                                           │ DeterministicReport
                                           ▼
-                                   Lens SSE route (server-side)
+                                   renderer SSE route
                                           │
                                           │ buildSummaryPrompt(report)
                                           ▼
@@ -181,8 +181,8 @@ The end-to-end loop, with Lens as the first consumer, looks like this:
 
 Two architectural properties fall out of this shape:
 
-- **The browser never composes the LLM prompt.** Lens' SSE route handler accepts only the deterministic report payload (or the session id needed to fetch it server-side); it constructs the `system` and `user` messages itself before calling kernel inference. The route rejects any body carrying a `messages` field. This is a security boundary — a compromised browser cannot inject arbitrary prompts into the platform LLM surface, only fabricate values inside the report shape, which the model treats as data.
-- **The platform stays prompt-template-free.** Consistent with the rule in [LLM Platform Layer — Determinism and bounded surface](llm-platform.md#determinism-and-bounded-surface), the prompt template lives in the consumer (here, Lens), not in `platform/llm/`. The kernel transports tokens; it does not own the report-summary framing.
+- **The browser never composes the LLM prompt.** A renderer's SSE route handler accepts only the deterministic report payload (or the session id needed to fetch it server-side); it constructs the `system` and `user` messages itself before calling kernel inference. The route rejects any body carrying a `messages` field. This is a security boundary — a compromised browser cannot inject arbitrary prompts into the platform LLM surface, only fabricate values inside the report shape, which the model treats as data.
+- **The platform stays prompt-template-free.** Consistent with the rule in [LLM Platform Layer — Determinism and bounded surface](llm-platform.md#determinism-and-bounded-surface), the prompt template lives in the renderer, not in `platform/llm/`. The kernel transports tokens; it does not own the report-summary framing.
 
 ## Where it lives
 
@@ -197,7 +197,7 @@ Access Analysis is an engine in Layer 2 (Engines). It owns:
 | SoD endpoints | `/sod/evaluate` and `/sod/what-if` |
 | Scan orchestration | Scan run lifecycle, fan-out to policy types, finding persistence, mitigation relinking, event emission |
 | Analytics surface | Read-only aggregations over open findings: `/analytics/top-risks`, `/analytics/risk-by-application`, `/analytics/findings-summary` |
-| Deterministic report payload | Read-only envelope over open findings consumed by Lens AI and future renderers (canonical: `/reports/deterministic`) |
+| Deterministic report payload | Read-only envelope over open findings consumed by downstream renderers (canonical: `/reports/deterministic`) |
 
 The `Capability`, `CapabilityMapping`, and `CapabilityGrant` ORM tables themselves are owned by Inventory — the engine operates on top of those tables, it does not own them.
 

@@ -26,13 +26,11 @@ cartridges/
       toxic_combination.template.yaml
 ```
 
-`cartridges/lens/<policy_type>/*.yaml` is the **only** location the kernel
-loads at runtime. Everything under `cartridges/templates/` is documentation
-and is intentionally invisible to `FileCartridgeLoader`.
-
-The directory name `lens` here refers to a *security policy lens
-namespace* — a way of grouping checks that look at the same governance
-question from different angles. It is not a product name.
+`cartridges/<namespace>/<policy_type>/*.yaml` is the location the kernel
+loads at runtime. The `<namespace>` segment groups cartridges by the
+product or domain that owns them — `lens/` is one such namespace.
+Everything under `cartridges/templates/` is documentation and is
+intentionally invisible to `FileCartridgeLoader`.
 
 ## Anatomy of a policy cartridge
 

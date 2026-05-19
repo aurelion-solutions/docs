@@ -137,10 +137,7 @@ Input JSON must be either an object with a `sources` key or a top-level list
 | `--file` | Path to JSON file. If omitted, reads from stdin. |
 | `--base-url` | Platform API base URL |
 
-Calls `POST /api/v0/sod/resolve-capabilities`, which is a deprecated alias kept
-for backward compatibility. The canonical endpoint is
-`POST /api/v0/capability-preview/resolve` — both currently return identical
-payloads. New integrations should target the canonical path directly.
+Calls `POST /api/v0/capability-preview/resolve`.
 
 ```bash
 echo '[{"artifact_id": 12, "binding_id": 34}]' \

@@ -20,7 +20,7 @@ Extensible via key-value attributes.
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/v0/nhis` | Create an NHI |
+| `POST` | `/api/v0/nhis` | Create an NHI. Creates a Subject row automatically (`kind=nhi`). |
 | `GET` | `/api/v0/nhis` | List all NHIs |
 | `GET` | `/api/v0/nhis/{id}` | Get by ID |
 | `GET` | `/api/v0/nhis/{id}/attributes` | List attributes |

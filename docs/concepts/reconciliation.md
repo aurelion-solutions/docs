@@ -9,8 +9,6 @@ Two engines split the responsibility:
 
 The split is intentional — staging is reversible, applying is not.
 
-> Renamed in Phase 19 (A2–A4): `reconciliation → inventory_reconcile`, `sync_apply → inventory_sync`. The URL path also moved to `/api/v0/inventory-reconciles`. The previous `/reconciliation/...` paths are gone.
-
 ## The idea
 
 Think of two sets:
@@ -33,7 +31,7 @@ This applies for one Application per run.
 
 ## Two entity types
 
-A reconciliation run is parameterised by `entity_type`. Phase 19 added `account` alongside `access_fact`:
+A reconciliation run is parameterised by `entity_type`:
 
 | `entity_type` | What it diffs | Delta target |
 |---|---|---|
@@ -49,7 +47,7 @@ Both share the same run-state machine and the same delta-item table — only the
 **Step 2. Dispatch by handler.** Each handler turns lake rows into normalized candidates:
 
 - `access_fact` runs the artifact-type-specific handlers (`role`, `acl_entry`, `db_grant`, …) over `raw.access_artifacts`.
-- `account` runs `AccountHandler.compute_delta` over `raw.accounts` (introduced in Phase 19 H9–H10).
+- `account` runs `AccountHandler.compute_delta` over `raw.accounts`.
 
 **Step 3. Load current state.** Live Inventory rows are loaded for comparison. For `access_fact` this means active `AccessFact` rows in `normalized.access_facts`; for `account` it means rows in the `accounts` Postgres table.
 
@@ -59,7 +57,7 @@ Both share the same run-state machine and the same delta-item table — only the
 
 ## Lake-first for master data
 
-Phase 19 H10 unified the path for all five master-data entities — `persons`, `employees`, `org_units`, `access_artifacts`, and `accounts`. Bulk endpoints write raw rows directly to an Iceberg table (`raw.<entity>`) and return a `{row_count, snapshot_id}` envelope; reconciliation runs read that lake snapshot, diff against Postgres, and persist delta items. The previous PG-direct upsert paths for accounts were removed.
+All five master-data entities — `persons`, `employees`, `org_units`, `access_artifacts`, and `accounts` — follow the same lake-first path. Bulk endpoints write raw rows directly to an Iceberg table (`raw.<entity>`) and return a `{row_count, snapshot_id}` envelope; reconciliation runs read that lake snapshot, diff against Postgres, and persist delta items.
 
 The shape:
 

@@ -217,5 +217,4 @@ under the `engines.access_analysis.analytics` component
 
 ## CLI
 
-No CLI surface. The endpoints are consumed directly by the kernel
-client (Lens, Engineering Studio, GUI).
+No CLI surface. The endpoints are consumed directly by REST clients.

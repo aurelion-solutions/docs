@@ -332,10 +332,9 @@ Descriptors are attached to the connector registration message:
 }
 ```
 
-`descriptor` is optional for backward compatibility. Connectors that omit it
-have `null` stored in `connector_instances.descriptor` and will not be
-selected for plan execution — `access_plan` requires a descriptor to build
-the DAG.
+`descriptor` is optional. Connectors that omit it have `null` stored in
+`connector_instances.descriptor` and will not be selected for plan
+execution — `access_plan` requires a descriptor to build the DAG.
 
 The descriptor is stored as-is in `connector_instances.descriptor` (JSONB).
 It is not validated at registration time beyond basic JSON parsing; schema

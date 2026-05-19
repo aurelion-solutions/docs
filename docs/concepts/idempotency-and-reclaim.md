@@ -31,9 +31,9 @@ Three concrete sources of repeat execution in this codebase:
 
 ## The contract
 
-`idempotent=True` is mandatory for all engine actions in Phase 18. The
-rule is stated in ARCH_CONTEXT and enforced at registration time via
-the `@register_action` decorator — see
+`idempotent=True` is mandatory for all engine actions. The rule is
+stated in ARCH_CONTEXT and enforced at registration time via the
+`@register_action` decorator — see
 [Engine Action Registry — The decorator](../reference/engine-action-registry.md#the-decorator)
 for the parameter reference.
 

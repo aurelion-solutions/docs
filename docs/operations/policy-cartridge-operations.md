@@ -122,7 +122,7 @@ live mirror of the cartridge.
 |---|---|---|
 | Scan fails with `CartridgeLoadError` in the run's `error_message` | YAML parse error, schema violation, or wrong `policy_type` directory | Re-run Step 1 (pre-flight). |
 | Scan succeeds but no findings of the expected kind | Cartridge condition does not match the context the engine builds. Check the `condition` block against the context shape documented at [Policy Cartridges (concepts)](../concepts/policy-cartridges.md#how-a-policy-cartridge-gets-evaluated). | Edit `condition` and re-deploy. |
-| Severity on the finding is the legacy Python default, not the YAML value | `decision` block missing or `risk_level` not set | Add `decision.risk_level` and re-deploy. |
+| Severity on the finding is the engine's built-in default, not the YAML value | `decision` block missing or `risk_level` not set | Add `decision.risk_level` and re-deploy. |
 | Finding fires for one subject only, not for the population | The relevant data was not loaded into the scan scope | Check `scan_run.scope_*` filters. Cartridges only see the candidates the engine loaded. |
 | `405` / `404` on the scan-run endpoints | Wrong API path (current API is `/api/v0/`) | Use `/api/v0/scan-runs/...`. |
 

@@ -48,9 +48,12 @@ curl -X POST http://localhost:8000/api/v0/employees \
   "id": "bbbb0000-0000-0000-0000-000000000002",
   "person_id": "aaaa0000-0000-0000-0000-000000000001",
   "is_locked": false,
-  "description": "Jane Doe"
+  "description": "Jane Doe",
+  "org_unit_id": null
 }
 ```
+
+To bind the employee to an org unit at creation time, include `org_unit_id` in the body. Unknown id → `404 "Org-unit not found"`. See the [Employee reference](../reference/employees.md#post-apiv0employees) for the full schema.
 
 ## Step 3: Add attributes (optional)
 

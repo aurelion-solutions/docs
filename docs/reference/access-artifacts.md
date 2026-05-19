@@ -32,16 +32,14 @@ The storage backend is selected by the `LAKE_ARTIFACTS_WRITE_BACKEND` migration 
 
 ### `GET /access-artifacts` response shape
 
-> **Breaking change.** This endpoint previously returned a bare JSON array of artifacts. It now returns an `AccessArtifactCursorPage`:
->
-> ```json
-> {
->   "items": [ { "id": "...", "application_id": "...", "...": "..." } ],
->   "next_cursor": "eyJhcHBsaWNhdGlvbl9pZCI6Ii4uLiIsImxhc3Rfc2Vlbl9pZCI6Ii4uLiJ9"
-> }
-> ```
->
-> Clients that previously did `for a in response.json()` must switch to `for a in response.json()["items"]`.
+The endpoint returns an `AccessArtifactCursorPage`:
+
+```json
+{
+  "items": [ { "id": "...", "application_id": "...", "...": "..." } ],
+  "next_cursor": "eyJhcHBsaWNhdGlvbl9pZCI6Ii4uLiIsImxhc3Rfc2Vlbl9pZCI6Ii4uLiJ9"
+}
+```
 
 | Query param | Type | Notes |
 |---|---|---|

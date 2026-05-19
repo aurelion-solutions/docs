@@ -3,19 +3,19 @@
 Aurelion is built as a three-layer pyramid. Layers define what each part owns and who can call whom. Dependencies flow downward only — upper layers know about lower ones, never the reverse.
 
 ```
-┌─────────────────────────────────────────┐
-│  Engines (Layer 2)                      │  engines and orchestrators
-│  inventory_reconcile · ingest · access_apply │
-│  access_effective · policy_assessment        │
-│  access_analysis · access_plan               │
-├─────────────────────────────────────────┤
-│  Inventory (Layer 1)                    │  domain data and its API
-│  persons · accounts · access facts ...  │
-│  access_model · policy · assessment     │
-├─────────────────────────────────────────┤
-│  Platform (Layer 0)                     │  infrastructure
-│  connectors · logs · secrets · DB · llm │
-└─────────────────────────────────────────┘
+┌───────────────────────────────────────────────┐
+│  Engines (Layer 2)                            │  engines and orchestrators
+│  inventory_reconcile · ingest · access_apply  │
+│  access_effective · policy_assessment         │
+│  access_analysis · access_plan                │
+├───────────────────────────────────────────────┤
+│  Inventory (Layer 1)                          │  domain data and its API
+│  persons · accounts · access facts ...        │
+│  access_model · policy · assessment           │
+├───────────────────────────────────────────────┤
+│  Platform (Layer 0)                           │  infrastructure
+│  connectors · logs · secrets · DB · llm       │
+└───────────────────────────────────────────────┘
 ```
 
 ## Platform
@@ -62,7 +62,7 @@ Current engines:
 
 ## Multi-transport action pattern
 
-Phase 19 codified an architectural invariant for engine actions that can be triggered from more than one place: **business logic lives in `service.py`, and three thin transports invoke the same service method.**
+Engine actions that can be triggered from more than one place follow this invariant: **business logic lives in `service.py`, and three thin transports invoke the same service method.**
 
 ```
               ┌─────────────────────────────┐

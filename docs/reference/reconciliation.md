@@ -5,8 +5,6 @@
 For how the engine works, see [Reconciliation concept](../concepts/reconciliation.md).
 For a step-by-step walkthrough, see [Run reconciliation guide](../guides/run-reconciliation.md).
 
-> Phase 19 renamed `reconciliation` to `inventory_reconcile` and the URL prefix to `/api/v0/inventory-reconciles`. The previous `/reconciliation/...` paths are gone.
-
 ## Entity types
 
 | `entity_type` | Diff target |
@@ -60,7 +58,7 @@ One handler per `artifact_type` for `entity_type=access_fact` runs, plus `Accoun
 
 ### Account handler
 
-`AccountHandler.compute_delta` (introduced in Phase 19 H9) diffs `raw.accounts` against the `accounts` Postgres table on `(application_id, username)`. It emits the same five operations:
+`AccountHandler.compute_delta` diffs `raw.accounts` against the `accounts` Postgres table on `(application_id, username)`. It emits the same five operations:
 
 | Op | Meaning |
 |---|---|
@@ -115,7 +113,7 @@ Adding a new artifact type is a new handler file; the engine does not change.
 | `created_at` | datetime | Used as the keyset pagination cursor |
 | `subject_display`, `account_display`, `resource_display`, `application_code`, `application_name`, `change_summary` | string | Read-only display fields populated by `batch_*_display` helpers; nullable, fall back to UUID when no display value is available |
 
-The display fields above are filled in by `display_lookups.py` on read — they are not stored on the row. Phase 19 H5 added them so list views can render human-readable strings without N+1 lookups; H6 fixed the underlying subject resolver to walk `subjects.id → employees | nhis → persons`.
+The display fields above are filled in by `display_lookups.py` on read — they are not stored on the row. They let list views render human-readable strings without N+1 lookups; the subject resolver walks `subjects.id → employees | nhis → persons`.
 
 ## API
 
@@ -140,7 +138,7 @@ Request body:
 }
 ```
 
-`entity_type` defaults to `access_fact` when omitted, preserving Phase 18 behaviour.
+`entity_type` defaults to `access_fact` when omitted.
 
 Response (`200`):
 
@@ -215,7 +213,7 @@ When `next_cursor` is `null`, iteration is complete. Cursors are opaque base64ur
 
 ### GET /inventory-reconciles/delta-items
 
-Cross-run flat list. Phase 19 H7 added this endpoint so the Studio "Incoming" tab and the GUI can list pending delta items across the entire system without iterating per run.
+Cross-run flat list. Lets the Studio "Incoming" tab and the GUI list pending delta items across the entire system without iterating per run.
 
 Query parameters:
 
@@ -327,8 +325,6 @@ al inventory-reconcile run --application-id <uuid>
 al inventory-reconcile run --application-id <uuid> --entity-type account
 ```
 
-Phase 19 H3 removed the legacy `al reconciliation run` and `al app reconcile run` commands — they pointed at the dead `/reconciliation/...` URL.
-
-CLI flags for `mode` and the new GET endpoints land in a later phase; today the CLI defaults to `review` and `entity_type=access_fact`.
+The CLI defaults to `mode=review` and `entity_type=access_fact`.
 
 Exit code 0 = run completed. Exit code 1 = application not found, conflict, or other HTTP error.

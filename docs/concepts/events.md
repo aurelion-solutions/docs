@@ -56,7 +56,7 @@ Only `service.py` emits events. Never models, never routes.py, never engine orch
 
 This is not just a convention — it is an invariant. If an event is emitted from two places, that is a bug: either deduplicate or merge the call sites.
 
-The single-emitter rule is enforced per event family. For example, `inventory.access_fact.{created,updated,revoked,reactivated}` is emitted **only** from `engines/inventory_sync/service.py` — `AccessFactService` mutating methods do not emit. The rationale: `normalized.access_facts` is owned by Iceberg via `lake_writer`, and `inventory_sync` (renamed from `sync_apply` in Phase 19) is the only path that writes to it.
+The single-emitter rule is enforced per event family. For example, `inventory.access_fact.{created,updated,revoked,reactivated}` is emitted **only** from `engines/inventory_sync/service.py` — `AccessFactService` mutating methods do not emit. The rationale: `normalized.access_facts` is owned by Iceberg via `lake_writer`, and `inventory_sync` is the only path that writes to it.
 
 ## Per-row vs per-batch
 
@@ -91,7 +91,7 @@ Consumers that care about ordering must sort by `occurred_at` from the envelope.
 
 ## Access fact events
 
-`inventory.access_fact.{created,updated,revoked,reactivated}` is fired per delta item by `inventory_sync` during apply (renamed from `SyncApplyService` in Phase 19). Every payload carries three traceability fields in addition to the per-fact data:
+`inventory.access_fact.{created,updated,revoked,reactivated}` is fired per delta item by `inventory_sync` during apply. Every payload carries three traceability fields in addition to the per-fact data:
 
 | Field | Why it is there |
 |---|---|
@@ -105,7 +105,7 @@ The `actor_kind` is `ENGINE` and the `actor_id` is `engines.sync_apply`. Recover
 
 Pipeline state transitions emit events on `aurelion.events` under the `pipeline.run.*` and `pipeline.step.*` families. All are emitted from `platform/orchestrator/service.py` — the sole writer to orchestrator tables.
 
-Key routing keys introduced in Phase 18:
+Key routing keys:
 
 | Routing key | When emitted | Notable payload fields |
 |---|---|---|
@@ -115,7 +115,7 @@ Key routing keys introduced in Phase 18:
 
 `pipeline.run.heartbeat_lost` fires when a worker's DB heartbeat goes silent for more than 10 seconds and another worker's reclaim sweep picks up the run. `pipeline.step.aborted` fires together with `heartbeat_lost` when a running `StepRun` is atomically aborted in the same transaction. Neither event carries PII — `worker_id` is a `<hostname>-<pid>-<slot>` string.
 
-## Replan matcher routing keys (Phase 19)
+## Replan matcher routing keys
 
 The `access_plan` engine subscribes to a small set of events that signal "this subject's context changed; rebuild the plan". The matcher is fan-out — a single trigger event can produce N plans (e.g. `application.decommissioned` produces one plan per NHI in that application).
 
@@ -135,4 +135,22 @@ The matcher uses the multi-transport action pattern described in [Declarative Ac
 The EAS is a read model built from `aurelion.events`. The `mq_eas_projection_consumer` subscribes to the bus and applies changes incrementally, guarded by CAS to prevent duplicates.
 
 The EAS is not the source of truth — it is a projection. The source of truth is the Inventory tables. If the EAS drifts, it can be rebuilt from the event history.
+
+## Read API for recent events
+
+`aurelion.events` is not normally surfaced as an HTTP stream. For
+operator inspection and debugging the platform API exposes a small
+read-only view onto the in-memory ring buffer that mirrors emitted
+envelopes on the local process:
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v0/platform/events?limit=<n>` | Return the most recent envelopes, newest first. `1 <= limit <= 500`. |
+
+The buffer is local to the platform API runtime (no cross-process
+guarantees) and exists for diagnostics. Projection consumers must read
+from the MQ bus directly, not from this endpoint.
+
+The CLI wraps the endpoint as `al events tail` (default limit 50).
+See [Events (CLI)](../cli/events.md).
 

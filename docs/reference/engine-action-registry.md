@@ -37,13 +37,13 @@ register_action(
 | `action` | Non-empty identifier for the specific action (e.g. `"create_account"`) |
 | `args_schema` | Pydantic `BaseModel` subclass describing the handler's input |
 | `result_schema` | Pydantic `BaseModel` subclass describing the handler's output |
-| `idempotent` | Metadata flag. `True` (default) is the only value used in Phase 18 |
+| `idempotent` | Metadata flag. `True` (default) is the only permitted value |
 
 The decorator returns the original function unchanged so it remains independently
 callable. Registration happens at import time and is single-threaded.
 
-`idempotent=True` is the only permitted Phase-18 value (ARCH_CONTEXT line 356).
-The registry stores the flag faithfully; enforcement is a future runner concern.
+`idempotent=True` is the only permitted value (ARCH_CONTEXT line 356). The
+registry stores the flag faithfully; runtime enforcement is a separate concern.
 
 ## ActionContext
 
@@ -93,9 +93,9 @@ All exceptions inherit from `ActionRegistryError`.
 
 ## Currently registered actions
 
-The table below lists every `(engine, action)` pair registered in `ACTION_REGISTRY`
-as of Phase 19 Step A4. The live catalogue (with arg/result schemas) is available
-at `GET /api/v0/.well-known/pipeline-actions.json`.
+The table below lists every `(engine, action)` pair registered in `ACTION_REGISTRY`.
+The live catalogue (with arg/result schemas) is available at
+`GET /api/v0/.well-known/pipeline-actions.json`.
 
 Actions marked `idempotent=yes` are safe for the runner to retry. For
 connector-backed actions (`access_apply.*`) this is a **delegated contract** —
@@ -121,6 +121,10 @@ guarantee that repeated invocations with the same args produce the same end stat
 | `access_analysis.reports.deterministic` | yes | Run a deterministic access analysis report |
 | `access_apply.create_account` | yes | Provision a new account on a target application via connector |
 | `access_apply.delete_account` | yes | Remove an account from a target application via connector |
+| `notifications.send_email` | no | Render an email template and deliver via the configured email provider |
+| `notifications.send_sms` | no | Render an SMS template and deliver via the configured SMS provider |
+| `notifications.send_webhook` | no | Render a webhook template and POST via the configured webhook provider |
+| `notifications.send_inapp` | no | Render an in-app template and emit an event via the configured in-app provider |
 
 ## Source of truth
 

@@ -1,6 +1,6 @@
 # Declarative Access Planning
 
-Phase 19 shifted Aurelion from a reactive JML/lifecycle model to **declarative, continuous reconciliation** of access. Instead of mutating access in response to events ("employee joined → grant role X"), the kernel continuously computes the desired state from policy and reduces the live state toward it.
+Aurelion is built on **declarative, continuous reconciliation** of access. Instead of mutating access in response to events ("employee joined → grant role X"), the kernel continuously computes the desired state from policy and reduces the live state toward it.
 
 The shape:
 
@@ -36,7 +36,7 @@ Declarative planning fixes all three by making "what access should this subject 
 
 ### 1. PDP.generative — compute desired state
 
-`policy_assessment.generative` is a stateless engine method introduced in Phase 19:
+`policy_assessment.generative` is a stateless engine method:
 
 ```
 (subject_ref, subject_type, subject_context,
@@ -84,7 +84,7 @@ Once `status = invalid`, the plan cannot be applied — `POST /plans/{id}/apply`
 
 ## Triggers for replan
 
-Phase 19 introduced an event-driven replan matcher that consumes events from `aurelion.events` and emits new plans automatically. The matcher fans out — a single trigger can produce multiple plans (e.g. `application.decommissioned` produces one plan per NHI in that application):
+An event-driven replan matcher consumes events from `aurelion.events` and emits new plans automatically. The matcher fans out — a single trigger can produce multiple plans (e.g. `application.decommissioned` produces one plan per NHI in that application):
 
 | Routing key | When replan fires |
 |---|---|
@@ -99,7 +99,7 @@ A separate scheduled scanner (`initiatives_scheduled_replan_scan`, cron 1m) catc
 
 ## Initiatives as audit trail
 
-Every access fact carries one or more `Initiative` rows in Phase 19, with a typed `origin` field:
+Every access fact carries one or more `Initiative` rows with a typed `origin` field:
 
 | `type` | `origin` format | Used by |
 |---|---|---|
@@ -114,7 +114,7 @@ See [Initiative reference](../reference/initiatives.md) for the full type list a
 
 ## The multi-transport action pattern
 
-Phase 19 codified an architectural pattern that several engine actions now follow: business logic lives in `service.py` and is invoked through three transports:
+Several engine actions follow this architectural pattern: business logic lives in `service.py` and is invoked through three transports:
 
 1. **Pipeline action** — invoked by the orchestrator inside a pipeline step.
 2. **REST endpoint** — invoked synchronously by an external caller.
@@ -122,7 +122,7 @@ Phase 19 codified an architectural pattern that several engine actions now follo
 
 All three call the same service method with the same arguments; only the input parsing and the response shape differ. The benefit: behaviour is identical regardless of how the action was triggered, and the test surface is the service method, not three near-duplicates.
 
-This is now an architectural invariant — adding a new transport (e.g. CLI) must not require a parallel implementation of the business logic.
+This is an architectural invariant — adding a new transport (e.g. CLI) must not require a parallel implementation of the business logic.
 
 ## Where it lives
 

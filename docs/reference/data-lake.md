@@ -26,7 +26,7 @@ Batch-oriented storage for connector and staging data. Connectors write large re
 
 The list endpoint returns `{ "items": [...], "next_cursor": "<opaque>" | null }`. Pass `next_cursor` back as `?cursor=` to fetch the following page. Default `limit` is 50, max 200.
 
-> **Breaking (April 2026):** `snapshot_id` on batch responses is now serialized as a **string** in JSON (Iceberg snapshot ids exceed JS `Number.MAX_SAFE_INTEGER`). The DB column remains a 64-bit integer; only the wire format changed. JS/TS clients must parse it as a string and not coerce to `Number`.
+> **Wire format:** `snapshot_id` on batch responses is serialized as a **string** in JSON because Iceberg snapshot ids exceed JS `Number.MAX_SAFE_INTEGER`. The DB column remains a 64-bit integer. JS/TS clients must parse it as a string and not coerce to `Number`.
 
 ## CLI
 
@@ -42,7 +42,7 @@ The list endpoint returns `{ "items": [...], "next_cursor": "<opaque>" | null }`
 
 ## Iceberg Operations
 
-Operational endpoints for the PyIceberg-backed lake (`raw.access_artifacts`, `normalized.access_facts`). These are distinct from the legacy datalake/batches surface above.
+Operational endpoints for the PyIceberg-backed lake (`raw.access_artifacts`, `normalized.access_facts`). These are distinct from the `/datalake/batches` surface above.
 
 ### `GET /api/v0/lake/status`
 

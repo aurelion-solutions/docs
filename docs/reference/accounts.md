@@ -17,7 +17,7 @@ A normalized remote account in a specific Application — the identity that exis
 
 ## List response display fields
 
-`GET /api/v0/accounts` items also carry read-only display fields, added in Phase 19 H5 so list UIs can render human-readable strings without N+1 lookups:
+`GET /api/v0/accounts` items also carry read-only display fields, letting list UIs render human-readable strings without N+1 lookups:
 
 | Field | Type | Notes |
 |---|---|---|
@@ -40,7 +40,7 @@ Create and delete of individual rows are managed by reconciliation and provision
 
 ### POST /accounts/bulk
 
-Phase 19 H10 rewrote this endpoint from PG-direct upsert to a lake-first pattern. The request body is a list of normalized account rows; the kernel writes them into the `raw.accounts` Iceberg table via `AccountLakeService` and returns a small envelope. The PG `accounts` table is **not** touched by this call — a subsequent `POST /inventory-reconciles/runs` with `entity_type=account` reads the snapshot, diffs against PG, and persists delta items. Apply (via `auto_apply` or `manual_apply`) is what mutates PG.
+Lake-first ingest. The request body is a list of normalized account rows; the kernel writes them into the `raw.accounts` Iceberg table via `AccountLakeService` and returns a small envelope. The PG `accounts` table is **not** touched by this call — a subsequent `POST /inventory-reconciles/runs` with `entity_type=account` reads the snapshot, diffs against PG, and persists delta items. Apply (via `auto_apply` or `manual_apply`) is what mutates PG.
 
 Response (`200`):
 
@@ -51,15 +51,13 @@ Response (`200`):
 }
 ```
 
-The pre-H10 response shape `{"upserted": <n>}` no longer exists.
-
 | Code | Condition |
 |---|---|
 | 200 | Rows written to `raw.accounts`. `snapshot_id` is the new Iceberg snapshot. |
 | 404 | Application not found |
 | 422 | Validation failure |
 
-The diff itself is driven by `run_accounts_reconciliation` in `master_data_pipeline.py`. With Phase 19 H10, all five master-data entities — `persons`, `employees`, `org_units`, `access_artifacts`, and `accounts` — follow this lake-first pattern.
+The diff itself is driven by `run_accounts_reconciliation` in `master_data_pipeline.py`. All five master-data entities — `persons`, `employees`, `org_units`, `access_artifacts`, and `accounts` — follow the same lake-first pattern.
 
 ## CLI
 

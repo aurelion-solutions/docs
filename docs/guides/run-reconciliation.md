@@ -48,7 +48,7 @@ Successful response (truncated):
 al inventory-reconcile run --application-id <application-uuid>
 ```
 
-The CLI defaults to `mode=review`. CLI flags for `dry_run` / fetching delta items land in a later phase.
+The CLI defaults to `mode=review`. For `dry_run` runs or to fetch delta items, use the REST API.
 
 ## Inspect the result
 
@@ -92,7 +92,7 @@ The engine emits a sequence of events on `aurelion.events`:
 
 All four events share `run_id` and `correlation_id`. See [Events and Logs](../concepts/events.md#reconciliation-event-ordering) for ordering rules.
 
-When `mode=auto_apply` (or after a manual apply call — see below), `inventory_sync` (renamed from `sync_apply` in Phase 19) additionally emits one `inventory.access_fact.{created,updated,revoked,reactivated}` event per applied delta item. Each carries `delta_item_id`, `snapshot_id`, and `reconciliation_run_id`.
+When `mode=auto_apply` (or after a manual apply call — see below), `inventory_sync` additionally emits one `inventory.access_fact.{created,updated,revoked,reactivated}` event per applied delta item. Each carries `delta_item_id`, `snapshot_id`, and `reconciliation_run_id`.
 
 For full request/response shapes, see the [Reconciliation reference](../reference/reconciliation.md).
 

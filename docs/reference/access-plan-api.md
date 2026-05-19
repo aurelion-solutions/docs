@@ -200,7 +200,7 @@ Fetch a single plan by UUID, including all items and their execution state.
 
 ## GET /plans/items
 
-Cross-plan flat list of `PlanItem` rows. Added in Phase 19 H8 so the Studio "Outgoing" tab and the GUI can show pending and executing plan items across the system without iterating per plan. The endpoint JOINs `PlanItemExecution.status` so each item carries its current `execution_status` inline.
+Cross-plan flat list of `PlanItem` rows. Lets the Studio "Outgoing" tab and the GUI show pending and executing plan items across the system without iterating per plan. The endpoint JOINs `PlanItemExecution.status` so each item carries its current `execution_status` inline.
 
 ### Query parameters
 

@@ -5,8 +5,8 @@ The endpoint is read-only. It does not render PDF or HTML, it does not
 call an LLM, and it does not invent data — every value is derived
 deterministically from current open `Finding` rows.
 
-The payload is the deterministic input for downstream consumers: the
-Lens AI summary endpoint, future renderers (CLI, Studio, IGA), and any
+The payload is the deterministic input for downstream renderers: AI
+summary services, CLI report generators, IDE integrations, and any
 client that wants a stable shape over kernel findings without
 duplicating the SQL.
 
@@ -79,7 +79,8 @@ Rule table:
 ### ExecutiveSummaryBlock
 
 Five blocks in a fixed, load-bearing order. Block ids and order are
-stable — the AI prompt and the Lens UI both rely on positional reads.
+stable — downstream AI prompts and renderer UIs both rely on positional
+reads.
 
 | Position | `block_id` | Title | `metric` |
 |---|---|---|---|
@@ -116,5 +117,4 @@ from the payload service itself
 
 ## CLI
 
-No CLI surface. The endpoint is consumed by Lens directly via the
-kernel client.
+No CLI surface. The endpoint is consumed by REST clients directly.

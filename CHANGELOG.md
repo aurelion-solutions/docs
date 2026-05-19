@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Notifications engine and platform channels documented across all four Diátaxis quadrants.**
+  - `concepts/notifications.md` — engine/platform split, template model, four delivery channels (email / sms / webhook / inapp), provider resolution.
+  - `reference/notifications.md` — `notifications.send_*` engine actions + per-channel `Provider` Protocol + `Message` / `SendResult` dataclasses + template catalogue.
+  - `operations/notifications.md` — env vars (`AURELION_NOTIFICATIONS_<CHANNEL>_PROVIDER`), required kernel-secret keys per provider, per-provider failure modes.
+- **`reference/storage-providers.md`** — `DataLakeStorage` Protocol, built-in `file` / `s3` / `iceberg` providers (the last two declared "not implemented"), `--storage-provider` CLI contract.
+- **`reference/effective-grants.md`** — Effective Access Store read API: `list_grants`, `explain_access`, `get_grant` REST endpoints + `effective_access.list_grants`, `explain_access`, `get_grant`, `project_access_fact`, `project_application`, `apply_incremental_change` engine actions.
+- **`concepts/domain-slice-pattern.md`** — `models.py` / `schemas.py` / `service.py` / `routes.py` slice anatomy + layer-routing rules + "only `service.py` emits events" invariant. Previously lived only in internal planning docs.
+- **`operations/message-queue.md`** — MQ exchange topology: `aurelion.events`, `aurelion.logs`, `aurelion.logs.buffer`, `aurelion.logs.siem` + connector commands / responses / registry exchanges + queue declaration ownership + routing-key conventions.
+- **`cli/events.md`** — `al events tail` (the only CLI command that reads the ring-buffer events stream).
+- **`cli/policy.md`** — `al policy evaluate` (file / stdin input, decision shape, exit codes).
+- **`mkdocs.yml` nav** — new pages slotted into `Concepts` (Domain Slice Pattern, Notifications), `Reference → Access` (Effective Grant), `Reference → Platform` (Storage Providers, Notifications), `Reference → CLI` (Events, Policy), `Operations` (Message Queue Topology, Notifications).
+
+### Changed
+
+- **`api/overview.md`** — explicit "REST only (no GraphQL)" constraint section + Authentication section updated to "not implemented" (was a stale forward-looking claim).
+- **`concepts/events.md`** — `## Read API` section added (`GET /api/v0/platform/events` ring-buffer contract).
+- **`reference/logs.md`** — `al logs tail` and `al logs buffer` CLI commands added alongside `read`; per-endpoint REST mapping (`/api/v0/platform/logs`, `/api/v0/log-buffer`).
+- **`reference/secrets.md`** — provider routes corrected to `/api/v0/secrets/providers/...`.
+- **`reference/engine-action-registry.md`** — four `notifications.send_*` actions added to the registered-action catalogue.
+- **`reference/resources.md`** — CLI section aligned with actual `al inventory resources` flag set (was outdated).
+- **`concepts/policy-cartridges.md`** — disclaimer "It is not a product name" removed; the `cartridges/<namespace>/` convention now honestly describes `<namespace>` as a product/domain owner, with `lens/` named as one such namespace.
+- **`concepts/layers.md`** — ASCII layer pyramid box rewidened so the longest engine row (`inventory_reconcile · ingest · access_apply`) no longer overflows the right border.
+- **`reference/org-units.md`** — `parent_id` field on `OrgUnitListItem` response shape (M-D); edit endpoint shown as `PATCH /v0/inventory/org-units/{id}` (was `PUT`), matching M-B.
+- **Nine pages cleaned of `Lens` / `Journey` / `Pulse` product names.** Replaced with neutral platform terms (`REST clients`, `downstream renderers`, `product-layer policies`, `operator UI`): `concepts/access-analysis.md`, `concepts/identity-model.md`, `reference/persons.md`, `reference/employees.md`, `reference/org-units.md`, `reference/deterministic-report.md`, `reference/analytics.md`, `reference/policy-catalog.md`, `operations/access-plan.md`. Engineering Studio is kept where it appears — it is an IDE tool, not a Layer-3 product.
+
+### Removed
+
+- **Product-layer documentation pages.** `docs/user/journey/overview.md` and `docs/guides/journey/contractor-companies.md` deleted along with their empty parent directories. The `Aurelion Journey` block is removed from `mkdocs.yml` nav. Platform docs describe the platform; product-layer UX belongs in the product repo.
+
 ## [0.8.0] - 2026-05-13
 
 ### Added

@@ -23,10 +23,10 @@ There are two things in the codebase that sound like "orchestrator" or
 
 - **`platform/orchestrator/`** — the generic, YAML-driven pipeline
   engine described on this page. Knows nothing about identity.
-- **`engines/access_plan/`** (renamed from `access_orchestration` in
-  Phase 19) — an IGA-domain engine that diffs desired vs current access
-  and produces an immutable plan of operations. Knows nothing about
-  pipelines. See [Declarative Access Planning](access-planning.md).
+- **`engines/access_plan/`** — an IGA-domain engine that diffs
+  desired vs current access and produces an immutable plan of
+  operations. Knows nothing about pipelines. See
+  [Declarative Access Planning](access-planning.md).
 
 The first is a platform primitive. The second is a capability engine
 that happens to live one layer up and may itself be invoked from a
@@ -74,10 +74,10 @@ reclaim sweep can distinguish dead workers from live ones. The
 executor also parks `wait_for_event` steps — the run transitions to
 `awaiting_event`, the slot is released, and the matcher resumes the
 run when a matching event arrives; see [Event Flow](event-flow.md)
-for the mechanics. Graceful drain, reclaim, and the two-layer
-heartbeat model shipped in Phase 18; multi-slot concurrency and HTTP
-health endpoints (`/healthz`, `/readyz`, `/metrics`) are deferred to
-a later phase.
+for the mechanics. The executor supports graceful drain, reclaim,
+and a two-layer heartbeat model. Multi-slot concurrency and HTTP
+health endpoints (`/healthz`, `/readyz`, `/metrics`) are not yet
+implemented.
 
 For the runtime contract — start command, environment variables,
 deployment topology — see the operations page once it lands. For the

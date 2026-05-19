@@ -1,8 +1,8 @@
 # Access Apply
 
-`access_apply` is the egress engine that applies planned access changes to external systems. In Phase 19 it became the executor for declarative `AccessPlan`s — for the end-to-end flow see [Declarative Access Planning](../concepts/access-planning.md).
+`access_apply` is the egress engine that applies planned access changes to external systems. It is the executor for declarative `AccessPlan`s — for the end-to-end flow see [Declarative Access Planning](../concepts/access-planning.md).
 
-> Phase 19 renamed `provisioning → access_apply`. The legacy "fire-and-forget account create/delete" surface described below remains for connectors that have not yet wired into the descriptor-driven plan executor.
+The engine exposes two surfaces: the plan-driven executor (the canonical IGA path) and a direct fire-and-forget account create/delete API for connectors that are not descriptor-driven.
 
 ## Plan-driven execution (canonical)
 
@@ -17,13 +17,13 @@
    - Calls `inventory_sync.sync_single_fact(descriptor, op, event_key)` to persist the resulting fact into `normalized.access_facts`.
 4. Releases the lease in a `finally` block.
 
-Wire-level idempotency comes from `event_key = hash(plan_item_id, op)`, which is stored as a column on `normalized.access_facts` (Phase 19 B1 added the column via `ALTER TABLE`).
+Wire-level idempotency comes from `event_key = hash(plan_item_id, op)`, stored as a column on `normalized.access_facts`.
 
 For the full operational runbook (creating, applying, diagnosing plans), see [Access Plan Operations](../operations/access-plan.md). The REST contract for `/plans/...` lives in [Access Plan API](access-plan-api.md).
 
-## Legacy direct provisioning API
+## Direct provisioning API
 
-For backward compatibility, the platform still exposes a fire-and-forget surface for connectors that have not been wired into the descriptor-driven flow. The command is enqueued over RabbitMQ and the call returns immediately; results come back asynchronously via [Connector Results](connector-results.md).
+For connectors that are not wired into the descriptor-driven flow, the platform exposes a fire-and-forget surface. The command is enqueued over RabbitMQ and the call returns immediately; results come back asynchronously via [Connector Results](connector-results.md).
 
 | Method | Path | Description |
 |---|---|---|
@@ -55,7 +55,7 @@ For backward compatibility, the platform still exposes a fire-and-forget surface
 
 ## No CLI equivalent
 
-The legacy surface is API-only. Use `curl` or an SDK client.
+The direct surface is API-only. Use `curl` or an SDK client.
 
 ```bash
 # Create
@@ -67,4 +67,4 @@ curl -X POST http://localhost:8000/api/v0/applications/<id>/accounts \
 curl -X DELETE http://localhost:8000/api/v0/applications/<id>/accounts/jdoe
 ```
 
-For new integrations target the plan-driven flow — it gives you DAG ordering, verify_fact protection, idempotency, and a single audit trail.
+Target the plan-driven flow whenever possible — it gives you DAG ordering, verify_fact protection, idempotency, and a single audit trail. The direct API exists only for connectors that cannot yet supply a descriptor.

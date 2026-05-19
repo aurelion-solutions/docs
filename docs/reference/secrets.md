@@ -46,10 +46,10 @@ Values are write-only on create and readable via GET (returned as plain text).
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/v0/secret-providers` | List all providers |
-| `POST` | `/api/v0/secret-providers` | Create a custom provider |
-| `GET` | `/api/v0/secret-providers/{name}` | Get by name |
-| `DELETE` | `/api/v0/secret-providers/{name}` | Delete (built-ins cannot be deleted) |
+| `GET` | `/api/v0/secrets/providers` | List all providers |
+| `POST` | `/api/v0/secrets/providers` | Create a custom provider |
+| `GET` | `/api/v0/secrets/providers/{name}` | Get by name |
+| `DELETE` | `/api/v0/secrets/providers/{name}` | Delete (built-ins cannot be deleted) |
 
 ## Provider CLI
 

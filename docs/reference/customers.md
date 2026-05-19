@@ -21,7 +21,7 @@ Extensible via key-value attributes.
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/v0/customers` | Create a customer |
+| `POST` | `/api/v0/customers` | Create a customer. Creates a Subject row automatically (`kind=customer`). |
 | `GET` | `/api/v0/customers` | List all customers |
 | `GET` | `/api/v0/customers/{id}` | Get by ID |
 | `PATCH` | `/api/v0/customers/{id}` | Update mutable fields |

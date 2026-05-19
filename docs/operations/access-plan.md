@@ -40,7 +40,7 @@ The plan is a plan, not an execution.
 |---|---|
 | `active` | The plan is current and can be applied. |
 | `superseded` | A newer plan for the same subject was created. This plan's diff is stale. |
-| `cancelled` | Reserved for Phase 20 (manual cancel via Journey UI). Not set by the kernel engine in Phase 19. |
+| `cancelled` | Set when an operator cancels the plan through an operator UI. The kernel engine itself does not set this status. |
 | `invalid` | The plan was invalidated automatically. See `invalidation_reason`. |
 
 ### Invalidation reasons
@@ -57,7 +57,7 @@ only when `invalidation_reason = stale_after_apply`. It is `null` otherwise.
 
 ### Supersedes chain
 
-Each new plan for a subject points `supersedes_plan_id` at the previously
+Each new plan for a subject points `supersedes_plan_id` at the prior
 `active` plan for that subject. The chain lets you trace the planning history
 backward.
 
@@ -100,7 +100,7 @@ dependencies, `requires_confirmation` flag, and PDP decision snapshots.
 Use dry-run for:
 
 - Admin debugging via Engineering Studio.
-- Phase 20 UI previews before committing to an apply.
+- UI previews before committing to an apply.
 - Checking whether a context change would produce destructive operations.
 
 ```bash
@@ -253,7 +253,7 @@ step. The step's `error` field contains the last exception message.
 
 ### Step 3 — Retry
 
-Phase 19 does not auto-retry failed runs. To retry:
+Failed runs are not auto-retried. To retry:
 
 1. Confirm the plan is still `active` (if another plan was applied in the
    meantime, this plan will be `invalid`).
@@ -278,5 +278,4 @@ the stale one.
 ## Who runs this
 
 Platform engineers and operators with API access to the kernel. This is not
-an end-user-facing procedure — there is no admin UI for access plans in
-Phase 19.
+an end-user-facing procedure — there is no admin UI for access plans.

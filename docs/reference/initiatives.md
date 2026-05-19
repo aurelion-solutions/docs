@@ -2,11 +2,11 @@
 
 Records *why* an AccessFact exists — the business justification behind a grant. An initiative is always linked to an AccessFact, carries a typed origin, and an optional validity window.
 
-Initiatives are immutable for audit purposes. To remove access, revoke the AccessFact; the linked initiative is **not deleted**, its `valid_until` is set to `now()` so the audit trail survives the revoke. Phase 19 codified this — there is no delete endpoint by design.
+Initiatives are immutable for audit purposes. To remove access, revoke the AccessFact; the linked initiative is **not deleted** — its `valid_until` is set to `now()` so the audit trail survives the revoke. There is no delete endpoint by design.
 
 ## Typed origin
 
-Phase 19 made initiatives the canonical metadata-on-access-fact carrier with a structured `origin` string. The format is `<type>:<id>` and is consumed by `policy_assessment.generative` to decide whether a fact survives the next replan.
+Initiatives are the canonical metadata-on-access-fact carrier with a structured `origin` string. The format is `<type>:<id>` and is consumed by `policy_assessment.generative` to decide whether a fact survives the next replan.
 
 | `type` | `origin` format | Meaning |
 |---|---|---|

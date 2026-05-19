@@ -179,7 +179,7 @@ condition:
 `False` (does not raise). `None` short-circuits to `False` before the cast.
 Numeric strings such as `"123"` are coerced via `float()` and compare numerically
 (`"123"` > `100` → `True`). Non-numeric strings (e.g. `"abc"`) return `False`.
-This behaviour is covered by the test `test_greater_than_string_ish_numbers_and_none` (Phase 17 Step 15).
+This behaviour is covered by the test `test_greater_than_string_ish_numbers_and_none`.
 
 ## Fact-path resolution
 
@@ -228,7 +228,7 @@ result = svc.evaluate_file(
 
 The dispatcher branch is selected by the presence of `condition` in
 `request.policy_definition`. Cartridges always carry a `condition`; the
-legacy `resources/policies/*.yaml` rule-pack path does not.
+`resources/policies/*.yaml` rule-pack path does not.
 
 ## Shipped policy cartridges today
 

@@ -16,7 +16,7 @@ on three axes:
 | `assessment_strategy` | `deterministic`, `heuristic`, `semantic_assisted`, `hybrid` |
 
 SoD is **not** a separate category from cartridges. SoD is `policy_type=sod`
-with `definition_source=db`. Lens cartridges are policies with
+with `definition_source=db`. File-based cartridges are policies with
 `definition_source=file`.
 
 ## `GET /api/v0/policies/catalog`
@@ -51,7 +51,7 @@ None.
 | Source | Origin | `policy_type` | `definition_source` | `assessment_strategy` | `status` |
 |---|---|---|---|---|---|
 | SoD rule | `sod_rules` table | `sod` | `db` | `deterministic` | `active` if `is_enabled=true`, else `inactive` |
-| Lens cartridge | `cartridges/lens/**/*.yaml` | from manifest | `file` | from manifest | always `available` |
+| File cartridge | `cartridges/lens/**/*.yaml` | from manifest | `file` | from manifest | always `available` |
 
 Templates under `cartridges/templates/**` are intentionally excluded — they
 are skeletons, not runnable policies.
@@ -82,5 +82,4 @@ The endpoint is read-only. It emits one INFO log per call under the
 
 ## CLI
 
-No CLI surface. The endpoint is consumed directly by the kernel client
-(Lens, Engineering Studio, GUI).
+No CLI surface. The endpoint is consumed directly by REST clients.

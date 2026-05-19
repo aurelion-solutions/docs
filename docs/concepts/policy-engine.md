@@ -25,7 +25,7 @@ A request to the PDP contains three parts:
 
 ## How the decision is made
 
-**Step 1: Rule selection.** The PDP loads YAML files from `resources/policies/` at startup. Rules are filtered by `subject_type`, `application`, and `resource_type` — only relevant ones are evaluated. (This is the legacy *rule-pack* path. File-based **policy cartridges** under `cartridges/lens/<policy_type>/*.yaml` use a different evaluator — see [Strategies](#strategies) and [Policy Cartridges](policy-cartridges.md).)
+**Step 1: Rule selection.** The PDP loads YAML files from `resources/policies/` at startup. Rules are filtered by `subject_type`, `application`, and `resource_type` — only relevant ones are evaluated. (This is the *rule-pack* path. File-based **policy cartridges** under `cartridges/lens/<policy_type>/*.yaml` use a different evaluator — see [Strategies](#strategies) and [Policy Cartridges](policy-cartridges.md).)
 
 **Step 2: Condition evaluation.** Each rule contains conditions over SubjectFacts and ThreatFacts attributes. Supported operators:
 
@@ -75,7 +75,7 @@ Rules are declarative and do not require a service restart when changed — the 
 
 ## Generative method
 
-Phase 19 added a second top-level entry point alongside the per-request evaluator: `policy_assessment.generative`. It is stateless and answers a different question — not "is this single access decision allow or deny", but "given this subject's context, what facts should they hold right now?".
+Alongside the per-request evaluator there is a second top-level entry point: `policy_assessment.generative`. It is stateless and answers a different question — not "is this single access decision allow or deny", but "given this subject's context, what facts should they hold right now?".
 
 ```
 (subject_ref, subject_type, subject_context,
@@ -90,13 +90,13 @@ See [Declarative Access Planning](access-planning.md) for the end-to-end flow.
 
 The PDP is a dispatcher in front of two assessment strategies, plus a third evaluation path for file-based policy cartridges:
 
-- **`deterministic` (rule-pack)** — YAML rule-pack evaluation under `resources/policies/`, the path described above. The historical default for atomic policy decisions.
+- **`deterministic` (rule-pack)** — YAML rule-pack evaluation under `resources/policies/`, the path described above. The default for atomic policy decisions.
 - **`deterministic` (file-based policy cartridge)** — same `deterministic` strategy on the dispatcher level, but routed to `evaluate_deterministic_cartridge` when the request's `policy_definition` carries a `condition` block. Inputs are plain context dicts, not the `Facts` schema. Used by all cartridge-backed callers (Access Analysis: orphan / terminated / unused). See [Policy Cartridges](policy-cartridges.md) for the DSL.
 - **`semantic_assisted`** — semantic evidence extraction layered on top of the deterministic path. Uses the LLM platform (`platform/llm`) only as inference infrastructure; the engine itself owns *how* the semantic evidence is incorporated into a decision. The engine never speaks of "LLM-assisted" — that wording confuses the boundary.
 
 The dispatcher (`engines/policy_assessment/dispatcher.py`) routes a `PolicyAssessmentRequest` to one of the strategies under `engines/policy_assessment/strategies/`. The output is a `PolicyAssessmentOutput` (carrying a `Decision` and the supporting evidence) defined in `engines/policy_assessment/contracts.py`.
 
-`PolicyType` and `AssessmentStrategy` enums are owned by **`src/inventory/policy/enums.py`** (Layer 1). The legacy `engines/policy_assessment/enums.py` is a re-export shim kept only for old import paths.
+`PolicyType` and `AssessmentStrategy` enums are owned by **`src/inventory/policy/enums.py`** (Layer 1).
 
 Policy types are organized under `engines/policy_assessment/policy_types/`. Each is a domain-family package (`sod/`, `access_risk/`, `lifecycle/`).
 
@@ -121,7 +121,7 @@ Planned policy types — placeholders in the enum, not yet wired:
 | `nhi` | Non-human identity hygiene checks |
 | `privileged_access` | Privileged-access governance checks |
 
-Each policy type lives in its own subdirectory under `engines/policy_assessment/policy_types/` and exposes a uniform contract. For cartridge-backed types, the *evaluator subdirectory* still exists but the runtime call goes through the cartridge service; the legacy `detect_*` functions remain as library helpers and as fallbacks.
+Each policy type lives in its own subdirectory under `engines/policy_assessment/policy_types/` and exposes a uniform contract. For cartridge-backed types, the runtime call goes through the cartridge service.
 
 ### SoD stays DB-backed
 
